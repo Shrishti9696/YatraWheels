@@ -7,8 +7,11 @@ import {
   CheckCircle, Sparkles, Route, Building2, Mountain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SearchBar } from "@/components/SearchBar";
 import { YatraBotWidget } from "@/components/YatraBotWidget";
+import { getVehicles } from "@/services/api";
+import type { Vehicle } from "@/data/mockData";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -223,74 +226,104 @@ function UseCasesSection() {
   );
 }
 
-/* ─── Fleet / Vehicle Categories ─────────────────────────────── */
-function FleetSection() {
-  const fleet = [
-    { name: "Sedans & Economy", desc: "Perfect for solo or couple trips", capacity: "1–4 passengers", from: "₹2,500/day", img: "https://images.unsplash.com/photo-1550355291-bbee04a92027?w=600&q=80" },
-    { name: "SUVs & Crossovers", desc: "Comfort for small groups", capacity: "4–7 passengers", from: "₹3,200/day", img: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80" },
-    { name: "Vans & MPVs", desc: "Spacious group transport", capacity: "8–12 passengers", from: "₹5,000/day", img: "https://images.unsplash.com/photo-1609259594217-74ef0aded34e?w=600&q=80" },
-    { name: "Mini & Coach Buses", desc: "Ideal for large groups", capacity: "12–50 passengers", from: "₹8,000/day", img: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=600&q=80" },
-    { name: "Luxury Fleet", desc: "Premium chauffeur experience", capacity: "1–7 passengers", from: "₹12,000/day", img: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80" },
-    { name: "Event Packages", desc: "Curated for weddings & events", capacity: "Custom fleet", from: "Custom pricing", img: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80" },
-  ];
+/* ─── Live Vendor Vehicles ────────────────────────────────────── */
+function LiveVehiclesSection() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getVehicles().then(v => { setVehicles(v.slice(0, 6)); setLoading(false); });
+  }, []);
 
   return (
     <section className="py-24 bg-card/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} className="text-center mb-14">
-          <motion.p variants={fadeInUp} className="text-primary text-sm font-medium uppercase tracking-widest mb-3">Our Fleet</motion.p>
-          <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-bold mb-4">Every vehicle for every journey</motion.h2>
-          <motion.p variants={fadeInUp} className="text-muted-foreground max-w-xl mx-auto">From intimate getaways to large group travel — we have the right vehicle at the right price.</motion.p>
+          <motion.p variants={fadeInUp} className="text-primary text-sm font-medium uppercase tracking-widest mb-3">Available Fleet</motion.p>
+          <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-bold mb-4">Vehicles listed by verified vendors</motion.h2>
+          <motion.p variants={fadeInUp} className="text-muted-foreground max-w-xl mx-auto">Every vehicle is owner-verified. Browse what's available right now across India.</motion.p>
         </motion.div>
 
-        <motion.div variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-50px" }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {fleet.map((cat) => (
-            <motion.div
-              key={cat.name}
-              variants={fadeInUp}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="group rounded-2xl overflow-hidden border border-white/8 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/8 transition-all duration-300 bg-card cursor-pointer"
-            >
-              <div className="relative h-44 overflow-hidden">
-                <img
-                  src={cat.img}
-                  alt={cat.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-3 right-3">
-                  <span className="px-2 py-1 rounded-lg bg-black/50 backdrop-blur-sm text-white text-xs font-semibold border border-white/15">
-                    {cat.from}
-                  </span>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-2xl overflow-hidden bg-card border border-card-border">
+                <Skeleton className="h-44 w-full" />
+                <div className="p-5 space-y-2">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-3 w-1/2" />
                 </div>
               </div>
-              <div className="p-5">
-                <h3 className="font-semibold text-foreground mb-1">{cat.name}</h3>
-                <p className="text-sm text-muted-foreground mb-3">{cat.desc}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Users className="w-3 h-3" />
-                    {cat.capacity}
-                  </span>
-                  <Link href="/booking">
-                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10 h-7 px-2 text-xs gap-1">
-                      Book <ArrowRight className="w-3 h-3" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
+            ))}
+          </div>
+        ) : vehicles.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="text-center py-20 border border-dashed border-white/10 rounded-3xl"
+          >
+            <Truck className="w-14 h-14 text-muted-foreground/30 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No vehicles listed yet</h3>
+            <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">Vendors haven't added any vehicles yet. Be the first to list your fleet!</p>
+            <Link href="/auth">
+              <Button className="gradient-blue-purple text-white border-0 shadow-lg shadow-primary/20">
+                List Your Vehicle
+              </Button>
+            </Link>
+          </motion.div>
+        ) : (
+          <>
+            <motion.div variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-50px" }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {vehicles.map((v) => (
+                <motion.div
+                  key={v.id}
+                  variants={fadeInUp}
+                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                  className="group rounded-2xl overflow-hidden border border-white/8 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/8 transition-all duration-300 bg-card cursor-pointer"
+                >
+                  <div className="relative h-44 overflow-hidden bg-muted">
+                    {v.imageUrl ? (
+                      <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center"><Car className="w-12 h-12 text-muted-foreground/30" /></div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-3 right-3">
+                      <span className="px-2 py-1 rounded-lg bg-black/50 backdrop-blur-sm text-white text-xs font-semibold border border-white/15">
+                        ₹{v.pricePerDay.toLocaleString()}/day
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-semibold text-foreground mb-1">{v.name}</h3>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                      <MapPin className="w-3 h-3" />{v.location}
+                      <span>·</span>
+                      <Users className="w-3 h-3" />{v.capacity} seats
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-xs text-yellow-400">
+                        <Star className="w-3 h-3 fill-current" />
+                        <span>{v.rating.toFixed(1)}</span>
+                      </div>
+                      <Link href="/booking">
+                        <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10 h-7 px-2 text-xs gap-1">
+                          Book <ArrowRight className="w-3 h-3" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} className="text-center mt-10">
-          <Link href="/booking">
-            <Button variant="outline" className="border-white/12 hover:bg-white/5 rounded-xl">
-              View all vehicles <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </Link>
-        </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} className="text-center mt-10">
+              <Link href="/booking">
+                <Button variant="outline" className="border-white/12 hover:bg-white/5 rounded-xl">
+                  View all vehicles <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            </motion.div>
+          </>
+        )}
       </div>
     </section>
   );
@@ -473,7 +506,7 @@ export default function Home() {
       <HeroSection />
       <TrustSection />
       <UseCasesSection />
-      <FleetSection />
+      <LiveVehiclesSection />
       <WhyUsSection />
       <AILeadSection />
       <CTASection />
