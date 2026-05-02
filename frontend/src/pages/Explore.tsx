@@ -4,6 +4,7 @@ import { Search, MapPin, ArrowRight, Filter, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DestinationPinsMap } from "@/components/DestinationPinsMap";
 import { Link, useLocation } from "wouter";
 import { getDestinations, getPopularRoutes, searchRoutes } from "@/services/api";
 import type { Destination, Route } from "@/data/mockData";
@@ -67,6 +68,15 @@ export default function Explore() {
           <p className="text-muted-foreground max-w-xl mx-auto">
             Discover destinations, browse routes, and find your next adventure.
           </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="mb-10"
+        >
+          <DestinationPinsMap activeTag={activeTag} />
         </motion.div>
 
         <motion.div
