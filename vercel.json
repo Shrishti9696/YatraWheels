@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm install && pnpm --filter @workspace/yatrawheels run build",
+  "outputDirectory": "artifacts/yatrawheels/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null
+}
