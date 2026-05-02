@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, Menu, X, ChevronDown, User, Settings, Sun, Moon, Home } from "lucide-react";
+import { LogOut, Menu, X, ChevronDown, User, Settings, Sun, Moon, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useBooking } from "@/context/BookingContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -35,15 +35,22 @@ export function PanelTopNav({ navItems, roleLabel, roleBadgeClass }: Props) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-14 gap-6">
 
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 shrink-0">
-              <div className="rounded-full overflow-hidden">
-                <YatraWheelsLogoMark size={32} />
-              </div>
-              <span className="text-base font-bold hidden sm:block">
-                Yatra<span className="gradient-text">Wheels</span>
-              </span>
-            </Link>
+            {/* Back to Home arrow + Logo */}
+            <div className="flex items-center gap-1 shrink-0">
+              <Link href="/">
+                <span className="flex items-center justify-center w-7 h-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all cursor-pointer" title="Back to Home">
+                  <ArrowLeft className="w-4 h-4" />
+                </span>
+              </Link>
+              <Link href="/" className="flex items-center gap-2">
+                <div className="rounded-full overflow-hidden">
+                  <YatraWheelsLogoMark size={32} />
+                </div>
+                <span className="text-base font-bold hidden sm:block">
+                  Yatra<span className="gradient-text">Wheels</span>
+                </span>
+              </Link>
+            </div>
 
             {/* Role badge */}
             <span className={`hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${roleBadgeClass}`}>
@@ -71,13 +78,6 @@ export function PanelTopNav({ navItems, roleLabel, roleBadgeClass }: Props) {
 
             {/* Right side */}
             <div className="flex items-center gap-2 ml-auto">
-              {/* Back to Home */}
-              <Link href="/">
-                <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/5 border border-border/60 transition-all cursor-pointer whitespace-nowrap">
-                  <Home className="w-3.5 h-3.5" /> Back to Home
-                </span>
-              </Link>
-
               {/* Theme toggle */}
               <button
                 onClick={toggleTheme}
@@ -202,7 +202,7 @@ export function PanelTopNav({ navItems, roleLabel, roleBadgeClass }: Props) {
               <div className="px-4 py-3 space-y-1">
                 <Link href="/" onClick={() => setMobileOpen(false)}>
                   <span className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer">
-                    <Home className="w-4 h-4" /> Back to Home
+                    <ArrowLeft className="w-4 h-4" /> Back to Home
                   </span>
                 </Link>
                 {navItems.map(({ href, label, icon: Icon }) => {
