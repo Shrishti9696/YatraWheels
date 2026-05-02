@@ -203,11 +203,11 @@ export async function getBookings(): Promise<Booking[]> {
 }
 
 export async function getDestinations(): Promise<Destination[]> {
-  return mockDestinations;
+  return [];
 }
 
 export async function getPopularRoutes(): Promise<Route[]> {
-  return mockRoutes.filter((r) => r.popular);
+  return [];
 }
 
 export async function getAvailableDrivers(): Promise<any[]> {
