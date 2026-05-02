@@ -4,7 +4,7 @@ import { Search, MapPin, ArrowRight, Filter, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { getDestinations, getPopularRoutes, searchRoutes } from "@/services/api";
 import type { Destination, Route } from "@/data/mockData";
 
@@ -18,6 +18,7 @@ const fadeUp = {
 };
 
 export default function Explore() {
+  const [, navigate] = useLocation();
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [loadingDest, setLoadingDest] = useState(true);
@@ -125,6 +126,7 @@ export default function Explore() {
                   variants={fadeUp}
                   className="group relative rounded-2xl overflow-hidden h-60 cursor-pointer"
                   data-testid={`card-destination-${dest.id}`}
+                  onClick={() => navigate(`/booking?destination=${encodeURIComponent(dest.name)}`)}
                 >
                   <img
                     src={dest.imageUrl}
@@ -146,6 +148,11 @@ export default function Explore() {
                           {tag}
                         </span>
                       ))}
+                    </div>
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold shadow-lg">
+                        Book Vehicles →
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -232,6 +239,7 @@ export default function Explore() {
                       size="sm"
                       className="gradient-blue-purple text-white border-0 opacity-0 group-hover:opacity-100 transition-opacity"
                       data-testid={`button-book-route-${route.id}`}
+                      onClick={() => navigate(`/booking?from=${encodeURIComponent(route.from)}&to=${encodeURIComponent(route.to)}`)}
                     >
                       Book
                     </Button>
