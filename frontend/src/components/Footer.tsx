@@ -27,8 +27,13 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center mb-4">
-              <YatraWheelsLogoMark height={40} />
+            <Link href="/" className="flex items-center gap-2.5 mb-4">
+              <div className="rounded-full overflow-hidden shrink-0">
+                <YatraWheelsLogoMark size={34} />
+              </div>
+              <span className="text-lg font-bold">
+                Yatra<span className="gradient-text">Wheels</span>
+              </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-xs">
               Smart vehicle booking and AI travel planning for trips, weddings, and group transport across India.
