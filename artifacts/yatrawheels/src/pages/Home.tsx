@@ -159,31 +159,25 @@ function TrustSection() {
 function UseCasesSection() {
   const useCases = [
     {
-      icon: Mountain,
-      emoji: "🏔️",
+      img: "/use-case-road-trip.png",
       title: "Road Trips",
       desc: "Explore hidden highways, mountain passes, and coastal roads in comfort. GPS-fitted, driver-guided vehicles make every road trip effortless.",
       tags: ["Solo", "Couples", "Friends"],
-      gradient: "from-blue-500/10 to-primary/5",
-      border: "hover:border-primary/30",
+      border: "hover:border-primary/40",
     },
     {
-      icon: HeartHandshake,
-      emoji: "💒",
+      img: "/use-case-wedding.png",
       title: "Destination Weddings",
       desc: "Coordinate seamless transport for hundreds of guests from airports, hotels, and venues. Custom fleets for every wedding size.",
       tags: ["Guest Shuttles", "Bridal Party", "Custom"],
-      gradient: "from-pink-500/10 to-purple-500/5",
-      border: "hover:border-purple-400/30",
+      border: "hover:border-purple-400/40",
     },
     {
-      icon: Users,
-      emoji: "👥",
+      img: "/use-case-group-travel.png",
       title: "Group Travel",
       desc: "From corporate offsites to school trips — our fleet scales to your group. Single booking, multiple vehicles, one point of contact.",
       tags: ["Corporate", "Schools", "Tours"],
-      gradient: "from-emerald-500/10 to-teal-500/5",
-      border: "hover:border-emerald-400/30",
+      border: "hover:border-emerald-400/40",
     },
   ];
 
@@ -202,22 +196,34 @@ function UseCasesSection() {
               key={uc.title}
               variants={fadeInUp}
               whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className={`glass-card rounded-2xl p-8 group border border-white/8 ${uc.border} hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 bg-gradient-to-br ${uc.gradient} cursor-pointer`}
+              className={`group rounded-2xl overflow-hidden border border-white/8 ${uc.border} hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 bg-card cursor-pointer`}
             >
-              <div className="text-5xl mb-5">{uc.emoji}</div>
-              <h3 className="font-bold text-xl mb-3">{uc.title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6">{uc.desc}</p>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {uc.tags.map(t => (
-                  <span key={t} className="px-3 py-1 text-xs rounded-full bg-white/8 text-muted-foreground border border-white/10 group-hover:border-white/20 transition-colors">{t}</span>
-                ))}
+              <div className="relative h-52 overflow-hidden">
+                <img
+                  src={uc.img}
+                  alt={uc.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-4 left-5">
+                  <h3 className="font-bold text-xl text-white">{uc.title}</h3>
+                </div>
               </div>
-              <Link href="/booking">
-                <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10 px-0 group/btn">
-                  Book now
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
+              <div className="p-6">
+                <p className="text-muted-foreground text-sm leading-relaxed mb-5">{uc.desc}</p>
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {uc.tags.map(t => (
+                    <span key={t} className="px-3 py-1 text-xs rounded-full bg-white/6 text-muted-foreground border border-white/10 group-hover:border-white/20 transition-colors">{t}</span>
+                  ))}
+                </div>
+                <Link href="/booking">
+                  <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10 px-0 group/btn">
+                    Book now
+                    <ArrowRight className="w-4 h-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
             </motion.div>
           ))}
         </motion.div>
