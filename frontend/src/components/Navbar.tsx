@@ -53,13 +53,10 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0" data-testid="link-logo">
+          <Link href="/" className="flex items-center shrink-0 group" data-testid="link-logo">
             <div className="group-hover:scale-105 transition-transform duration-200">
-              <YatraWheelsLogoMark size={34} />
+              <YatraWheelsLogoMark height={38} />
             </div>
-            <span className="text-lg font-bold tracking-tight">
-              Yatra<span className="gradient-text">Wheels</span>
-            </span>
           </Link>
 
           {/* Desktop nav */}
