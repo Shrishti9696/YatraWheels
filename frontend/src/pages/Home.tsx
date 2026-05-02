@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/SearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { YatraBotWidget } from "@/components/YatraBotWidget";
 import { getDestinations, getPopularRoutes } from "@/services/api";
 import type { Destination, Route as RouteType } from "@/data/mockData";
 
@@ -64,10 +65,10 @@ function HeroSection() {
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 mb-10"
             >
-              <Link href="/get-plan">
+              <Link href="/planner">
                 <Button size="lg" className="gradient-blue-purple text-white border-0 shadow-xl shadow-primary/30 hover:shadow-primary/45 transition-all px-8 rounded-xl group w-full sm:w-auto">
                   <Brain className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" />
-                  Plan with AI
+                  AI Planner
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
@@ -97,70 +98,12 @@ function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Right — floating preview card */}
+          {/* Right — Live YatraBot Chat */}
           <motion.div
             initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.3 }}
             className="hidden lg:block"
           >
-            <div className="relative">
-              <div className="glass-card rounded-3xl border border-primary/20 p-6 shadow-2xl shadow-primary/10">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl gradient-blue-purple flex items-center justify-center shadow-lg shadow-primary/30">
-                    <Brain className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold">AI Travel Plan</div>
-                    <div className="text-xs text-muted-foreground">Generating for Goa · 5 days</div>
-                  </div>
-                  <div className="ml-auto flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    <span className="text-xs text-muted-foreground">Live</span>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    { day: "Day 1", activity: "Arrive Goa · Baga Beach sunset walk", done: true },
-                    { day: "Day 2", activity: "Dudhsagar Falls · Forest trek · Spice farm", done: true },
-                    { day: "Day 3", activity: "Old Goa churches · Panjim market tour", done: false },
-                    { day: "Day 4", activity: "South Goa beaches · Palolem cove", done: false },
-                  ].map(({ day, activity, done }) => (
-                    <div key={day} className={`flex items-start gap-3 rounded-xl p-3 ${done ? "bg-primary/8 border border-primary/15" : "bg-white/3 border border-white/8"}`}>
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${done ? "bg-primary/20" : "border border-white/15"}`}>
-                        {done && <CheckCircle className="w-3 h-3 text-primary" />}
-                      </div>
-                      <div>
-                        <div className="text-xs font-semibold text-primary mb-0.5">{day}</div>
-                        <div className="text-xs text-muted-foreground">{activity}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 p-3 rounded-xl bg-accent/8 border border-accent/20 flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Recommended vehicle</span>
-                  <span className="text-xs font-semibold text-accent">Innova Crysta · ₹4,500/day</span>
-                </div>
-              </div>
-              {/* floating badge */}
-              <motion.div
-                animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-4 -right-4 glass-card rounded-2xl px-4 py-3 border border-white/15 shadow-xl"
-              >
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-accent fill-accent" />
-                  <span className="text-sm font-bold">4.9</span>
-                  <span className="text-xs text-muted-foreground">/ 50K+ trips</span>
-                </div>
-              </motion.div>
-              <motion.div
-                animate={{ y: [0, 8, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-4 -left-4 glass-card rounded-2xl px-4 py-3 border border-white/15 shadow-xl"
-              >
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-primary" />
-                  <span className="text-xs font-medium">Instant confirmation</span>
-                </div>
-              </motion.div>
-            </div>
+            <YatraBotWidget />
           </motion.div>
         </div>
 
