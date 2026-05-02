@@ -14,6 +14,13 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
+export interface OTPRequired {
+  requiresOTP: true;
+  userId: string;
+  email: string;
+  role: string;
+}
+
 export function getToken(): string | null {
   return localStorage.getItem("yw_token");
 }
@@ -66,7 +73,7 @@ export async function registerUser(data: {
 export async function loginUser(data: {
   email: string;
   password: string;
-}): Promise<AuthResponse> {
+}): Promise<AuthResponse | OTPRequired> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -75,6 +82,30 @@ export async function loginUser(data: {
   const json = await res.json();
   if (!res.ok) throw new Error(json.message || "Login failed");
   return json;
+}
+
+export async function verifyOTP(data: {
+  userId: string;
+  otp: string;
+}): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Verification failed");
+  return json;
+}
+
+export async function resendOTP(userId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/auth/resend-otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to resend code");
 }
 
 export async function fetchMe(): Promise<AuthUser> {
