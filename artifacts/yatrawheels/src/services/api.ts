@@ -210,9 +210,10 @@ export async function getPopularRoutes(): Promise<Route[]> {
   return [];
 }
 
-export async function getAvailableDrivers(): Promise<any[]> {
+export async function getAvailableDrivers(city?: string): Promise<any[]> {
   try {
-    return await apiFetch<any[]>("/drivers/available");
+    const query = city ? `?city=${encodeURIComponent(city)}` : "";
+    return await apiFetch<any[]>(`/drivers/available${query}`);
   } catch {
     return [];
   }
