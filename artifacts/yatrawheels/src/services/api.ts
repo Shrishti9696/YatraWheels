@@ -4,9 +4,6 @@ import {
   TripPlan,
   Booking,
   Destination,
-  mockRoutes,
-  mockBookings,
-  mockDestinations,
 } from "../data/mockData";
 import { authHeaders } from "./authService";
 
@@ -83,15 +80,8 @@ export async function getVehicleById(id: string): Promise<Vehicle | null> {
   }
 }
 
-export async function searchRoutes(from: string, to: string): Promise<Route[]> {
-  if (!from && !to) return mockRoutes;
-  const fromLower = from?.toLowerCase() || "";
-  const toLower = to?.toLowerCase() || "";
-  return mockRoutes.filter(
-    (r) =>
-      (fromLower ? r.from.toLowerCase().includes(fromLower) : true) &&
-      (toLower ? r.to.toLowerCase().includes(toLower) : true)
-  );
+export async function searchRoutes(_from: string, _to: string): Promise<Route[]> {
+  return [];
 }
 
 export async function generateTripPlan(params: {
