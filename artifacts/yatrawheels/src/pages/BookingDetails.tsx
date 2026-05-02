@@ -6,7 +6,6 @@ import {
   CreditCard, AlertCircle, Car, UserCheck, ChevronDown, Minus, Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { mockVehicles } from "@/data/mockData";
 import { useState, useEffect } from "react";
 import { createBookingAPI, createPaymentOrder, verifyPaymentAPI, getAvailableDrivers } from "@/services/api";
 import { getToken } from "@/services/authService";
@@ -46,8 +45,15 @@ export default function BookingDetails() {
   const [availableDrivers, setAvailableDrivers] = useState<any[]>([]);
   const [loadingDrivers, setLoadingDrivers] = useState(false);
 
-  const vehicle = ctxVehicle || mockVehicles.find((v) => v.id === id) || mockVehicles[0];
-  const pricing = computePricing(vehicle, days, withDriver);
+  const vehicle = ctxVehicle;
+
+  useEffect(() => {
+    if (!vehicle) {
+      navigate("/booking");
+    }
+  }, [vehicle]);
+
+  const pricing = vehicle ? computePricing(vehicle, days, withDriver) : null;
 
   useEffect(() => {
     if (withDriver && availableDrivers.length === 0) {
