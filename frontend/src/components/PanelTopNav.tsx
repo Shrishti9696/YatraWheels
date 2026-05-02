@@ -36,11 +36,8 @@ export function PanelTopNav({ navItems, roleLabel, roleBadgeClass }: Props) {
           <div className="flex items-center h-14 gap-6">
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 shrink-0">
-              <YatraWheelsLogoMark size={30} />
-              <span className="text-base font-bold hidden sm:block">
-                Yatra<span className="gradient-text">Wheels</span>
-              </span>
+            <Link href="/" className="flex items-center shrink-0">
+              <YatraWheelsLogoMark height={32} />
             </Link>
 
             {/* Role badge */}
