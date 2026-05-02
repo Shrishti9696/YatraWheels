@@ -3,7 +3,7 @@ interface LogoProps {
   className?: string;
 }
 
-export function YatraWheelsLogoMark({ height = 36, className = "" }: LogoProps) {
+export function YatraWheelsLogoMark({ height = 44, className = "" }: LogoProps) {
   return (
     <img
       src="/logo.png"
@@ -21,8 +21,8 @@ export function YatraWheelsWordmark({ className = "" }: { className?: string }) 
     <img
       src="/logo.png"
       alt="YatraWheels"
-      height={28}
-      style={{ height: "28px", width: "auto" }}
+      height={44}
+      style={{ height: "44px", width: "auto" }}
       className={`object-contain ${className}`}
       draggable={false}
     />
