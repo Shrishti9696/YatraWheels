@@ -58,7 +58,8 @@ export default function BookingDetails() {
   useEffect(() => {
     if (withDriver && availableDrivers.length === 0) {
       setLoadingDrivers(true);
-      getAvailableDrivers()
+      const pickupCity = tripParams.from?.split(",")[0]?.trim();
+      getAvailableDrivers(pickupCity)
         .then(setAvailableDrivers)
         .finally(() => setLoadingDrivers(false));
     }
