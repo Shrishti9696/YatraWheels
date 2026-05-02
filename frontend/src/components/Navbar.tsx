@@ -55,7 +55,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0 group" data-testid="link-logo">
             <div className="group-hover:scale-105 transition-transform duration-200">
-              <YatraWheelsLogoMark height={38} />
+              <YatraWheelsLogoMark height={44} />
             </div>
           </Link>
 
