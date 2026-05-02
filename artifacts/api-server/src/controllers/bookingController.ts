@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import Booking from "../models/Booking";
 import Vehicle from "../models/Vehicle";
+import Driver from "../models/Driver";
 import { buildPriceBreakdown, estimateDistance } from "../services/pricingService";
 import { AuthRequest } from "../middlewares/auth";
 
 export async function createBooking(req: AuthRequest, res: Response): Promise<void> {
-  const { vehicleId, pickupLocation, dropLocation, date, returnDate, passengers } = req.body;
+  const { vehicleId, pickupLocation, dropLocation, date, returnDate, passengers, withDriver, driverId } = req.body;
   const userId = req.user!.id;
 
   if (!vehicleId || !pickupLocation || !dropLocation || !date || !passengers) {
@@ -18,8 +19,6 @@ export async function createBooking(req: AuthRequest, res: Response): Promise<vo
     res.status(404).json({ message: "Vehicle not found" });
     return;
   }
-
-  const vendorId = vehicle.vendorId;
 
   if (!vehicle.isAvailable) {
     res.status(409).json({ message: "Vehicle is not available" });
@@ -51,17 +50,37 @@ export async function createBooking(req: AuthRequest, res: Response): Promise<vo
     Math.ceil((returnD.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24))
   );
   const distanceKm = estimateDistance(pickupLocation, dropLocation);
-  const pricing = buildPriceBreakdown(vehicle, days, distanceKm);
+  const useDriver = !!withDriver;
+  const pricing = buildPriceBreakdown(vehicle, days, distanceKm, useDriver);
+
+  const vendorId = vehicle.vendorId;
+
+  let resolvedDriverId: any = undefined;
+  if (useDriver && driverId) {
+    const driver = await Driver.findById(driverId);
+    if (driver && driver.isAvailable && driver.status === "approved") {
+      resolvedDriverId = driver._id;
+    }
+  }
 
   const booking = await Booking.create({
     userId,
     vehicleId,
     vendorId,
+    driverId: resolvedDriverId,
     pickupLocation,
     dropLocation,
     date: bookingDate,
     returnDate: returnD,
     passengers,
+    withDriver: useDriver,
+    distanceKm,
+    vehicleCost: pricing.vehicleCost,
+    distanceCost: pricing.distanceCost,
+    driverFee: pricing.driverFee,
+    platformFee: pricing.platformFee,
+    vendorAmount: pricing.vendorAmount,
+    driverAmount: pricing.driverAmount,
     totalPrice: pricing.total,
     status: "pending",
   });
@@ -73,6 +92,7 @@ export async function getUserBookings(req: AuthRequest, res: Response): Promise<
   const userId = req.user!.id;
   const bookings = await Booking.find({ userId })
     .populate("vehicleId", "name type imageUrl pricePerDay")
+    .populate("driverId", "userId licenseNumber rating")
     .sort({ createdAt: -1 })
     .lean();
   res.json(bookings);
@@ -81,7 +101,8 @@ export async function getUserBookings(req: AuthRequest, res: Response): Promise<
 export async function getBookingById(req: AuthRequest, res: Response): Promise<void> {
   const booking = await Booking.findById(req.params["id"])
     .populate("vehicleId")
-    .populate("userId", "name email");
+    .populate("userId", "name email")
+    .populate("driverId");
 
   if (!booking) {
     res.status(404).json({ message: "Booking not found" });
