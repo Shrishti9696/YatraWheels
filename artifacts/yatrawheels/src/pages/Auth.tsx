@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { MapPin, Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, Car, Truck, Users } from "lucide-react";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, Car, Truck, Users, ShieldCheck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +9,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { loginUser, registerUser, setToken, setStoredUser } from "@/services/authService";
+import { loginUser, registerUser, setToken, setStoredUser, verifyOTP, resendOTP } from "@/services/authService";
+import type { OTPRequired } from "@/services/authService";
 import { useBooking } from "@/context/BookingContext";
 
 const loginSchema = z.object({
@@ -40,10 +41,60 @@ function getRoleRedirect(role: string): string {
   return "/dashboard";
 }
 
+function OTPInput({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const refs = useRef<(HTMLInputElement | null)[]>([]);
+
+  function handleKey(i: number, e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Backspace" && !value[i] && i > 0) {
+      refs.current[i - 1]?.focus();
+    }
+  }
+
+  function handleChange(i: number, v: string) {
+    const digit = v.replace(/\D/g, "").slice(-1);
+    const next = [...value];
+    next[i] = digit;
+    onChange(next);
+    if (digit && i < 5) refs.current[i + 1]?.focus();
+  }
+
+  function handlePaste(e: React.ClipboardEvent) {
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasted.length === 6) {
+      onChange(pasted.split(""));
+      refs.current[5]?.focus();
+      e.preventDefault();
+    }
+  }
+
+  return (
+    <div className="flex gap-2 justify-center" onPaste={handlePaste}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <input
+          key={i}
+          ref={el => { refs.current[i] = el; }}
+          type="text"
+          inputMode="numeric"
+          maxLength={1}
+          value={value[i] || ""}
+          onChange={e => handleChange(i, e.target.value)}
+          onKeyDown={e => handleKey(i, e)}
+          className="w-11 h-12 text-center text-lg font-bold rounded-xl border border-white/15 bg-muted/50 focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 transition-all"
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function Auth() {
   const [showPass, setShowPass] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [signupError, setSignupError] = useState("");
+  const [otpState, setOtpState] = useState<OTPRequired | null>(null);
+  const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(""));
+  const [otpError, setOtpError] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const { setUser } = useBooking();
   const [, navigate] = useLocation();
 
@@ -62,10 +113,16 @@ export default function Auth() {
     setLoginError("");
     try {
       const res = await loginUser(v);
-      setToken(res.token);
-      setStoredUser(res.user);
-      setUser(res.user);
-      navigate(getRoleRedirect(res.user.role));
+      if ("requiresOTP" in res && res.requiresOTP) {
+        setOtpState(res);
+        setOtpDigits(Array(6).fill(""));
+        setOtpError("");
+      } else {
+        setToken(res.token);
+        setStoredUser(res.user);
+        setUser(res.user);
+        navigate(getRoleRedirect(res.user.role));
+      }
     } catch (err: any) {
       setLoginError(err.message || "Login failed. Please try again.");
     }
@@ -82,6 +139,131 @@ export default function Auth() {
     } catch (err: any) {
       setSignupError(err.message || "Signup failed. Please try again.");
     }
+  }
+
+  async function onVerifyOTP() {
+    if (!otpState) return;
+    const code = otpDigits.join("");
+    if (code.length !== 6) {
+      setOtpError("Please enter the complete 6-digit code");
+      return;
+    }
+    setOtpLoading(true);
+    setOtpError("");
+    try {
+      const res = await verifyOTP({ userId: otpState.userId, otp: code });
+      setToken(res.token);
+      setStoredUser(res.user);
+      setUser(res.user);
+      navigate(getRoleRedirect(res.user.role));
+    } catch (err: any) {
+      setOtpError(err.message || "Invalid code. Please try again.");
+      setOtpLoading(false);
+    }
+  }
+
+  async function onResendOTP() {
+    if (!otpState || resendCooldown > 0) return;
+    try {
+      await resendOTP(otpState.userId);
+      setOtpDigits(Array(6).fill(""));
+      setOtpError("");
+      setResendCooldown(60);
+      const interval = setInterval(() => {
+        setResendCooldown(c => {
+          if (c <= 1) { clearInterval(interval); return 0; }
+          return c - 1;
+        });
+      }, 1000);
+    } catch (err: any) {
+      setOtpError(err.message || "Failed to resend code");
+    }
+  }
+
+  if (otpState) {
+    const roleLabel = otpState.role === "vendor" ? "Vendor" : "Driver";
+    return (
+      <main className="min-h-screen flex items-center justify-center pt-16 pb-10 px-4 relative overflow-hidden">
+        <button
+          onClick={() => { setOtpState(null); loginForm.reset(); }}
+          className="absolute top-5 left-5 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group z-10"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          Back
+        </button>
+
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 left-1/3 w-96 h-96 rounded-full bg-primary/8 blur-3xl" />
+          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-purple-500/8 blur-3xl" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="relative w-full max-w-md"
+        >
+          <Link href="/" className="flex items-center justify-center gap-2.5 mb-8">
+            <div className="w-9 h-9 rounded-xl gradient-blue-purple flex items-center justify-center shadow-lg shadow-primary/30">
+              <MapPin className="w-4 h-4 text-white" strokeWidth={2.5} />
+            </div>
+            <span className="text-xl font-bold">
+              Yatra<span className="gradient-text">Wheels</span>
+            </span>
+          </Link>
+
+          <div className="bg-card border border-card-border rounded-3xl p-8 shadow-2xl">
+            <div className="flex flex-col items-center text-center mb-7">
+              <div className="w-14 h-14 rounded-2xl gradient-blue-purple flex items-center justify-center shadow-lg shadow-primary/25 mb-4">
+                <ShieldCheck className="w-7 h-7 text-white" />
+              </div>
+              <h2 className="text-xl font-bold mb-1">Verify Your Identity</h2>
+              <p className="text-sm text-muted-foreground">
+                A 6-digit code was sent to your email as part of {roleLabel} two-factor authentication.
+              </p>
+              <p className="text-sm font-medium mt-2 text-primary">{otpState.email}</p>
+            </div>
+
+            <div className="space-y-5">
+              <OTPInput value={otpDigits} onChange={setOtpDigits} />
+
+              <AnimatePresence>
+                {otpError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 text-center"
+                  >
+                    {otpError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <Button
+                onClick={onVerifyOTP}
+                disabled={otpLoading || otpDigits.join("").length !== 6}
+                className="w-full gradient-blue-purple text-white border-0 shadow-lg shadow-primary/25 py-5 rounded-xl"
+              >
+                {otpLoading ? "Verifying..." : <><span>Verify & Sign In</span><ArrowRight className="w-4 h-4 ml-2" /></>}
+              </Button>
+
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-2">Didn't receive the code?</p>
+                <button
+                  onClick={onResendOTP}
+                  disabled={resendCooldown > 0}
+                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </main>
+    );
   }
 
   return (
@@ -178,7 +360,6 @@ export default function Auth() {
                     <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">{signupError}</div>
                   )}
 
-                  {/* Role selection */}
                   <div>
                     <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">I want to join as</div>
                     <div className="grid grid-cols-3 gap-2">
