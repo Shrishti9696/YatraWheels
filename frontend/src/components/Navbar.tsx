@@ -87,6 +87,15 @@ export function Navbar() {
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
+            {/* Get Started — shown only when not logged in, next to theme toggle */}
+            {!user && (
+              <Link href="/auth" data-testid="link-signup">
+                <Button size="sm" className="gradient-blue-purple text-white border-0 shadow-lg shadow-primary/25 h-8 rounded-lg text-sm">
+                  Get Started
+                </Button>
+              </Link>
+            )}
+
             {/* Upgrade button */}
             <Link href="/pricing" data-testid="link-pricing">
               <Button size="sm" className="text-xs gap-1.5 h-8 rounded-lg px-3 gradient-blue-purple text-white border-0 shadow-md shadow-primary/20">
@@ -192,18 +201,11 @@ export function Navbar() {
                 </AnimatePresence>
               </div>
             ) : (
-              <>
-                <Link href="/auth" data-testid="link-login">
-                  <Button variant="ghost" size="sm" className="text-sm text-muted-foreground hover:text-foreground h-8">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/auth" data-testid="link-signup">
-                  <Button size="sm" className="gradient-blue-purple text-white border-0 shadow-lg shadow-primary/25 h-8 rounded-lg text-sm">
-                    Get Started
-                  </Button>
-                </Link>
-              </>
+              <Link href="/auth" data-testid="link-login">
+                <Button variant="ghost" size="sm" className="text-sm text-muted-foreground hover:text-foreground h-8">
+                  Sign In
+                </Button>
+              </Link>
             )}
           </div>
 
@@ -215,6 +217,13 @@ export function Navbar() {
             >
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
+            {!user && (
+              <Link href="/auth">
+                <Button size="sm" className="gradient-blue-purple text-white border-0 shadow-md shadow-primary/20 h-8 rounded-lg text-xs px-3">
+                  Get Started
+                </Button>
+              </Link>
+            )}
             <button
               className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -275,14 +284,9 @@ export function Navbar() {
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link href="/auth" onClick={() => setMobileOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-center border border-border/60 rounded-xl" data-testid="button-mobile-signin">Sign In</Button>
-                    </Link>
-                    <Link href="/auth" onClick={() => setMobileOpen(false)}>
-                      <Button className="w-full gradient-blue-purple text-white border-0 rounded-xl" data-testid="button-mobile-signup">Get Started</Button>
-                    </Link>
-                  </div>
+                  <Link href="/auth" onClick={() => setMobileOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-center border border-border/60 rounded-xl" data-testid="button-mobile-signin">Sign In</Button>
+                  </Link>
                 )}
               </div>
             </div>
