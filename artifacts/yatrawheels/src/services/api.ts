@@ -51,6 +51,7 @@ export async function getVehicles(filters?: VehicleFilters): Promise<Vehicle[]> 
     type: v.type,
     capacity: v.capacity,
     pricePerDay: v.pricePerDay,
+    pricePerKm: v.pricePerKm ?? 12,
     features: v.features,
     imageUrl: v.imageUrl,
     rating: v.rating,
@@ -69,6 +70,7 @@ export async function getVehicleById(id: string): Promise<Vehicle | null> {
       type: v.type,
       capacity: v.capacity,
       pricePerDay: v.pricePerDay,
+      pricePerKm: v.pricePerKm ?? 12,
       features: v.features,
       imageUrl: v.imageUrl,
       rating: v.rating,
@@ -125,6 +127,7 @@ export async function generateTripPlan(params: {
           type: v.type,
           capacity: v.capacity,
           pricePerDay: v.pricePerDay,
+          pricePerKm: v.pricePerKm ?? 12,
           features: v.features,
           imageUrl: v.imageUrl,
           rating: v.rating,
@@ -138,6 +141,7 @@ export async function generateTripPlan(params: {
           type: "van",
           capacity: 7,
           pricePerDay: 4500,
+          pricePerKm: 12,
           features: ["AC", "GPS"],
           imageUrl: "",
           rating: 4.8,
@@ -155,7 +159,7 @@ export async function generateTripPlan(params: {
       highlights: data.highlights,
     };
   } catch {
-    const { Vehicle: _V, mockVehicles } = await import("../data/mockData");
+    const { mockVehicles } = await import("../data/mockData");
     const vehicle = mockVehicles.find((v) => v.capacity >= params.people) || mockVehicles[0];
     const itinerary = Array.from({ length: params.days }).map((_, i) => ({
       day: i + 1,
@@ -206,6 +210,14 @@ export async function getPopularRoutes(): Promise<Route[]> {
   return mockRoutes.filter((r) => r.popular);
 }
 
+export async function getAvailableDrivers(): Promise<any[]> {
+  try {
+    return await apiFetch<any[]>("/drivers/available");
+  } catch {
+    return [];
+  }
+}
+
 export async function createBookingAPI(data: {
   vehicleId: string;
   pickupLocation: string;
@@ -213,6 +225,8 @@ export async function createBookingAPI(data: {
   date: string;
   returnDate?: string;
   passengers: number;
+  withDriver?: boolean;
+  driverId?: string;
 }): Promise<{ booking: any; pricing: any }> {
   return apiFetch("/bookings", {
     method: "POST",
