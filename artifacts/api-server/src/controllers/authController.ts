@@ -3,10 +3,16 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
 import Driver from "../models/Driver";
+import OTP from "../models/OTP";
+import { sendOTPEmail } from "../services/emailService";
 
 function generateToken(id: string, email: string, role: string): string {
   const secret = process.env["JWT_SECRET"] ?? process.env["SESSION_SECRET"] ?? "fallback-secret";
   return jwt.sign({ id, email, role }, secret, { expiresIn: "7d" });
+}
+
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 export async function register(req: Request, res: Response): Promise<void> {
@@ -29,7 +35,6 @@ export async function register(req: Request, res: Response): Promise<void> {
   const hashedPassword = await bcrypt.hash(password, 12);
   const user = await User.create({ name, email, password: hashedPassword, role: userRole });
 
-  // If registering as driver, create driver profile
   if (userRole === "driver") {
     await Driver.create({
       userId: user._id,
@@ -67,12 +72,104 @@ export async function login(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const token = generateToken(String(user._id), user.email, user.role);
+  if (user.role === "vendor" || user.role === "driver") {
+    const otp = generateOTP();
+    await OTP.deleteMany({ userId: String(user._id) });
+    await OTP.create({
+      userId: String(user._id),
+      email: user.email,
+      otp,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    });
 
+    await sendOTPEmail(user.email, user.name, otp, user.role);
+
+    res.json({
+      requiresOTP: true,
+      userId: String(user._id),
+      email: user.email,
+      role: user.role,
+    });
+    return;
+  }
+
+  const token = generateToken(String(user._id), user.email, user.role);
   res.json({
     token,
     user: { id: user._id, name: user.name, email: user.email, role: user.role },
   });
+}
+
+export async function verifyOTP(req: Request, res: Response): Promise<void> {
+  const { userId, otp } = req.body;
+
+  if (!userId || !otp) {
+    res.status(400).json({ message: "User ID and OTP are required" });
+    return;
+  }
+
+  const record = await OTP.findOne({
+    userId,
+    otp,
+    expiresAt: { $gt: new Date() },
+  });
+
+  if (!record) {
+    res.status(400).json({ message: "Invalid or expired verification code" });
+    return;
+  }
+
+  await OTP.deleteMany({ userId });
+
+  const user = await User.findById(userId);
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  const token = generateToken(String(user._id), user.email, user.role);
+  res.json({
+    token,
+    user: { id: user._id, name: user.name, email: user.email, role: user.role },
+  });
+}
+
+export async function resendOTP(req: Request, res: Response): Promise<void> {
+  const { userId } = req.body;
+
+  if (!userId) {
+    res.status(400).json({ message: "User ID is required" });
+    return;
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  if (user.role !== "vendor" && user.role !== "driver") {
+    res.status(400).json({ message: "2FA is only required for vendors and drivers" });
+    return;
+  }
+
+  const recent = await OTP.findOne({ userId, expiresAt: { $gt: new Date(Date.now() - 60 * 1000) } });
+  if (recent) {
+    res.status(429).json({ message: "Please wait 60 seconds before requesting a new code" });
+    return;
+  }
+
+  const otp = generateOTP();
+  await OTP.deleteMany({ userId });
+  await OTP.create({
+    userId,
+    email: user.email,
+    otp,
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+  });
+
+  await sendOTPEmail(user.email, user.name, otp, user.role);
+  res.json({ message: "Verification code sent" });
 }
 
 export async function getMe(req: Request, res: Response): Promise<void> {
