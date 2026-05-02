@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VehicleCard } from "@/components/VehicleCard";
 import { SearchBar } from "@/components/SearchBar";
+import { TripMap } from "@/components/TripMap";
 import { Link } from "wouter";
+import { useBooking } from "@/context/BookingContext";
 import { getVehicles } from "@/services/api";
 import type { Vehicle, VehicleType } from "@/data/mockData";
 
@@ -19,6 +21,7 @@ const types: { value: string; label: string }[] = [
 ];
 
 export default function Booking() {
+  const { tripParams } = useBooking();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState("all");
@@ -72,6 +75,17 @@ export default function Booking() {
         >
           <SearchBar onSearch={fetchVehicles} />
         </motion.div>
+
+        {tripParams.from && tripParams.to && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-8"
+          >
+            <TripMap from={tripParams.from} to={tripParams.to} />
+          </motion.div>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-8">
           <motion.aside
