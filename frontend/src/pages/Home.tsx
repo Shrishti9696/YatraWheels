@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/SearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { YatraBotWidget } from "@/components/YatraBotWidget";
+import { ComingSoonInlineBadge } from "@/components/ComingSoonBadge";
+import { useFeatures } from "@/context/FeatureContext";
 import { getDestinations, getPopularRoutes } from "@/services/api";
 import type { Destination, Route as RouteType } from "@/data/mockData";
 
@@ -24,6 +26,8 @@ const staggerContainer = {
 
 /* ─── Hero ───────────────────────────────────────────────────── */
 function HeroSection() {
+  const { features } = useFeatures();
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden pt-16">
       {/* ambient orbs */}
@@ -65,11 +69,12 @@ function HeroSection() {
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 mb-10"
             >
-              <Link href="/planner">
-                <Button size="lg" className="gradient-blue-purple text-white border-0 shadow-xl shadow-primary/30 hover:shadow-primary/45 transition-all px-8 rounded-xl group w-full sm:w-auto">
+              <Link href={features.AI_SEARCH ? "/planner" : "#"}>
+                <Button size="lg" disabled={!features.AI_SEARCH} className="gradient-blue-purple text-white border-0 shadow-xl shadow-primary/30 hover:shadow-primary/45 transition-all px-8 rounded-xl group w-full sm:w-auto">
                   <Brain className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" />
                   AI Planner
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  {!features.AI_SEARCH && <ComingSoonInlineBadge />}
+                  {features.AI_SEARCH && <ArrowRight className="w-4 h-4 ml-2" />}
                 </Button>
               </Link>
               <Link href="/booking">
@@ -101,9 +106,21 @@ function HeroSection() {
           {/* Right — Live YatraBot Chat */}
           <motion.div
             initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.3 }}
-            className="hidden lg:block"
+            className="hidden lg:block relative"
           >
-            <YatraBotWidget />
+            {features.AI_SEARCH ? (
+              <YatraBotWidget />
+            ) : (
+              <div className="bg-card/50 border border-dashed border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center text-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-amber-500" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">AI Assistant Coming Soon</div>
+                  <div className="text-xs text-muted-foreground">Our smart travel bot is being tuned for you.</div>
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
 
@@ -619,7 +636,7 @@ export default function Home() {
       <PopularRoutesSection />
       <DestinationsSection />
       <WhyUsSection />
-      <AILeadSection />
+      {features.AI_SEARCH && <AILeadSection />}
       <CTASection />
       <ScrollToTopButton />
     </main>

@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Link, useParams, useLocation } from "wouter";
 import { ArrowLeft, CheckCircle, Star, Users, Shield, Calendar, MapPin, CreditCard, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ComingSoonBadge } from "@/components/ComingSoonBadge";
+import { useFeatures } from "@/context/FeatureContext";
 import { mockVehicles } from "@/data/mockData";
 import { useState } from "react";
 import { createBookingAPI, createPaymentOrder, verifyPaymentAPI } from "@/services/api";
@@ -16,6 +18,7 @@ declare global {
 }
 
 export default function BookingDetails() {
+  const { features } = useFeatures();
   const { id } = useParams<{ id: string }>();
   const { selectedVehicle: ctxVehicle, tripParams, user } = useBooking();
   const [confirmed, setConfirmed] = useState(false);
@@ -241,22 +244,42 @@ export default function BookingDetails() {
                 </div>
 
                 {/* Route map */}
-                <RouteMap
-                  from={tripParams.from || "Delhi, India"}
-                  to={tripParams.to || "Agra, India"}
-                  className="h-52 mt-2"
-                />
+                {features.LIVE_TRACKING ? (
+                  <RouteMap
+                    from={tripParams.from || "Delhi, India"}
+                    to={tripParams.to || "Agra, India"}
+                    className="h-52 mt-2"
+                  />
+                ) : (
+                  <div className="h-52 mt-2 bg-muted/30 border border-dashed border-white/10 rounded-xl flex items-center justify-center p-4">
+                    <div className="text-center">
+                      <MapPin className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+                      <div className="text-xs font-medium">Live tracking coming soon</div>
+                      <div className="text-[10px] text-muted-foreground">Map services are being configured.</div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="bg-card border border-card-border rounded-2xl p-5">
                 <h3 className="font-semibold mb-4">Payment Method</h3>
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-primary/30 bg-primary/5">
-                  <CreditCard className="w-5 h-5 text-primary" />
-                  <div>
-                    <div className="text-sm font-medium">Credit / Debit Card / UPI</div>
-                    <div className="text-xs text-muted-foreground">Secure payment via Razorpay</div>
+                {features.PAYMENTS ? (
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-primary/30 bg-primary/5">
+                    <CreditCard className="w-5 h-5 text-primary" />
+                    <div>
+                      <div className="text-sm font-medium">Credit / Debit Card / UPI</div>
+                      <div className="text-xs text-muted-foreground">Secure payment via Razorpay</div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-white/10 bg-card/50">
+                    <CreditCard className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <div className="text-sm font-medium">Online Payments</div>
+                      <div className="text-xs text-amber-400">Coming soon</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -303,7 +326,7 @@ export default function BookingDetails() {
                 <Button
                   className="w-full gradient-blue-purple text-white border-0 shadow-lg shadow-primary/25 py-6 text-base rounded-xl"
                   onClick={handleConfirm}
-                  disabled={loading}
+                  disabled={loading || !features.PAYMENTS}
                   data-testid="button-confirm-booking"
                 >
                   {loading ? (
@@ -311,7 +334,13 @@ export default function BookingDetails() {
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Processing...
                     </span>
-                  ) : user ? "Pay with Razorpay" : "Sign In to Book"}
+                  ) : !features.PAYMENTS ? (
+                    "Payments Coming Soon"
+                  ) : user ? (
+                    "Pay with Razorpay"
+                  ) : (
+                    "Sign In to Book"
+                  )}
                 </Button>
               </div>
             </div>

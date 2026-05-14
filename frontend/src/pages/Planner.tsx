@@ -8,6 +8,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useBooking } from "@/context/BookingContext";
+import { useFeatures } from "@/context/FeatureContext";
+import { ComingSoonBadge } from "@/components/ComingSoonBadge";
 import { authHeaders } from "@/services/authService";
 import type { TripPlan } from "@/data/mockData";
 
@@ -228,219 +230,114 @@ function TypingIndicator() {
 
 export default function Planner() {
   const { user } = useBooking();
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
-
-  async function sendMessage(text: string) {
-    if (!text.trim() || isTyping) return;
-
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: text.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    setInput("");
-    setIsTyping(true);
-
-    const history = [...messages.filter(m => m.id !== "welcome"), userMsg].map(m => ({
-      role: m.role,
-      content: m.content,
-    }));
-
-    try {
-      const res = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(),
-        },
-        body: JSON.stringify({ messages: history }),
-      });
-
-      const data = await res.json() as { content: string };
-      const { text: parsed, plan } = parsePlan(data.content);
-
-      const botMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: parsed,
-        plan: plan ?? undefined,
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, botMsg]);
-    } catch {
-      const fallback: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: "I'm having trouble connecting right now. Please try again in a moment! 🙏",
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, fallback]);
-    } finally {
-      setIsTyping(false);
-    }
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage(input);
-    }
-  }
-
-  function handleReset() {
-    setMessages([WELCOME_MESSAGE]);
-    setInput("");
-    inputRef.current?.focus();
-  }
-
-  const showQuickReplies = messages.length === 1;
-
-  return (
-    <main className="pt-16 min-h-screen flex flex-col">
-      <div className="flex-1 flex flex-col max-w-3xl w-full mx-auto px-4 sm:px-6 pb-0">
-        {/* Header */}
-        <div className="pt-6 pb-4">
-          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group mb-4">
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            Back to Home
-          </Link>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl gradient-blue-purple flex items-center justify-center shadow-lg shadow-primary/30">
-                <Brain className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold">YatraBot</h1>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs text-muted-foreground">AI Travel Planner</span>
-                </div>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              className="text-muted-foreground hover:text-foreground gap-2 text-xs h-8"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              New Chat
-            </Button>
-          </div>
-        </div>
-
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto py-4 space-y-1 min-h-[420px] max-h-[calc(100vh-280px)]">
-          <AnimatePresence initial={false}>
-            {messages.map(msg => (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-                className={`flex items-end gap-2 mb-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-              >
-                {/* Avatar */}
-                {msg.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full gradient-blue-purple flex items-center justify-center shrink-0 shadow-md shadow-primary/20 mb-1">
-                    <Bot className="w-4 h-4 text-white" />
-                  </div>
-                )}
-                {msg.role === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0 mb-1 text-xs font-bold text-primary">
-                    {user?.name?.[0]?.toUpperCase() ?? "U"}
-                  </div>
-                )}
-
-                <div className={`flex-1 ${msg.role === "user" ? "flex flex-col items-end" : ""}`}>
-                  <div
-                    className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                      msg.role === "user"
-                        ? "gradient-blue-purple text-white rounded-br-md shadow-primary/15"
-                        : "bg-card border border-card-border rounded-bl-md"
-                    }`}
-                    dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
-                  />
-                  {msg.plan && <PlanCard plan={msg.plan} />}
-                  <div className="text-[10px] text-muted-foreground/50 mt-1 px-1">
-                    {msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-
-          {isTyping && <TypingIndicator />}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Quick replies */}
-        <AnimatePresence>
-          {showQuickReplies && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-wrap gap-2 pb-3"
-            >
-              {QUICK_REPLIES.map(reply => (
-                <button
-                  key={reply}
-                  onClick={() => sendMessage(reply)}
-                  className="px-3 py-1.5 text-xs rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/12 hover:border-primary/40 transition-all font-medium"
-                >
-                  {reply}
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Input */}
-        <div className="border-t border-border/60 pt-4 pb-6">
-          {!user && (
-            <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/8 border border-accent/20 text-xs text-accent">
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span><Link href="/auth" className="underline font-medium">Sign in</Link> to save your plan and get personalized recommendations</span>
-            </div>
-          )}
-          <div className="flex items-end gap-3 p-3 rounded-2xl bg-card border border-card-border shadow-sm focus-within:border-primary/30 transition-colors">
-            <MessageSquare className="w-4 h-4 text-muted-foreground/50 mb-2.5 shrink-0" />
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask me about your dream trip..."
-              rows={1}
-              style={{ resize: "none", minHeight: "36px", maxHeight: "120px" }}
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none py-1.5"
-            />
-            <Button
-              onClick={() => sendMessage(input)}
-              disabled={!input.trim() || isTyping}
-              size="sm"
-              className="gradient-blue-purple text-white border-0 shadow-md shadow-primary/20 rounded-xl h-9 w-9 p-0 shrink-0"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+        {!features.AI_SEARCH ? (
+          <div className="flex-1 flex items-center justify-center py-12">
+            <ComingSoonBadge label="AI Travel Planner" className="max-w-md w-full" />
           </div>
-          <p className="text-center text-[10px] text-muted-foreground/40 mt-2">
-            YatraBot · Powered by GPT-4o-mini · Plans are AI-generated suggestions
-          </p>
-        </div>
+        ) : (
+          <>
+            <div className="flex-1 overflow-y-auto py-4 space-y-1 min-h-[420px] max-h-[calc(100vh-280px)]">
+              <AnimatePresence initial={false}>
+                {messages.map(msg => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className={`flex items-end gap-2 mb-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+                  >
+                    {/* Avatar */}
+                    {msg.role === "assistant" && (
+                      <div className="w-8 h-8 rounded-full gradient-blue-purple flex items-center justify-center shrink-0 shadow-md shadow-primary/20 mb-1">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                    {msg.role === "user" && (
+                      <div className="w-8 h-8 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0 mb-1 text-xs font-bold text-primary">
+                        {user?.name?.[0]?.toUpperCase() ?? "U"}
+                      </div>
+                    )}
+
+                    <div className={`flex-1 ${msg.role === "user" ? "flex flex-col items-end" : ""}`}>
+                      <div
+                        className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                          msg.role === "user"
+                            ? "gradient-blue-purple text-white rounded-br-md shadow-primary/15"
+                            : "bg-card border border-card-border rounded-bl-md"
+                        }`}
+                        dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
+                      />
+                      {msg.plan && <PlanCard plan={msg.plan} />}
+                      <div className="text-[10px] text-muted-foreground/50 mt-1 px-1">
+                        {msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {isTyping && <TypingIndicator />}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Quick replies */}
+            <AnimatePresence>
+              {showQuickReplies && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-wrap gap-2 pb-3"
+                >
+                  {QUICK_REPLIES.map(reply => (
+                    <button
+                      key={reply}
+                      onClick={() => sendMessage(reply)}
+                      className="px-3 py-1.5 text-xs rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/12 hover:border-primary/40 transition-all font-medium"
+                    >
+                      {reply}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Input */}
+            <div className="border-t border-border/60 pt-4 pb-6">
+              {!user && (
+                <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/8 border border-accent/20 text-xs text-accent">
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                  <span><Link href="/auth" className="underline font-medium">Sign in</Link> to save your plan and get personalized recommendations</span>
+                </div>
+              )}
+              <div className="flex items-end gap-3 p-3 rounded-2xl bg-card border border-card-border shadow-sm focus-within:border-primary/30 transition-colors">
+                <MessageSquare className="w-4 h-4 text-muted-foreground/50 mb-2.5 shrink-0" />
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask me about your dream trip..."
+                  rows={1}
+                  style={{ resize: "none", minHeight: "36px", maxHeight: "120px" }}
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none py-1.5"
+                />
+                <Button
+                  onClick={() => sendMessage(input)}
+                  disabled={!input.trim() || isTyping}
+                  size="sm"
+                  className="gradient-blue-purple text-white border-0 shadow-md shadow-primary/20 rounded-xl h-9 w-9 p-0 shrink-0"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="text-center text-[10px] text-muted-foreground/40 mt-2">
+                YatraBot · Powered by GPT-4o-mini · Plans are AI-generated suggestions
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </main>
   );

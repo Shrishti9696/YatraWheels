@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { logger } from "../lib/logger";
+import { isOpenAIAvailable } from "../lib/envValidator";
 import OpenAI from "openai";
 
 const SYSTEM_PROMPT = `You are YatraBot, a friendly and expert AI travel assistant for YatraWheels — India's premium vehicle booking and travel planning platform.
@@ -72,6 +73,13 @@ export async function handleAIChat(req: Request, res: Response): Promise<void> {
 
   if (!Array.isArray(messages) || messages.length === 0) {
     res.status(400).json({ message: "messages array is required" });
+    return;
+  }
+
+  // Graceful fallback when OpenAI key is not configured
+  if (!isOpenAIAvailable()) {
+    logger.warn("OPENAI_API_KEY not set — AI chat unavailable");
+    res.status(503).json({ success: false, message: "AI search is currently unavailable" });
     return;
   }
 

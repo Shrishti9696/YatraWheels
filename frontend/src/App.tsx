@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BookingProvider } from "@/context/BookingContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { FeatureProvider } from "@/context/FeatureContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import Home from "@/pages/Home";
@@ -83,16 +84,18 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <BookingProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <AppContent />
-              <Toaster />
-            </WouterRouter>
-          </BookingProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
+      <FeatureProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <BookingProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <AppContent />
+                <Toaster />
+              </WouterRouter>
+            </BookingProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </FeatureProvider>
     </ThemeProvider>
   );
 }

@@ -11,6 +11,9 @@ import vendorRouter from "./vendor";
 import driverRouter, { driverPublicRouter } from "./driver";
 import adminRouter from "./admin";
 import aiChatRouter from "./aiChat";
+import configRouter from "./config";
+import mapboxRouter from "./mapbox";
+import uploadRouter from "./upload";
 
 const router: IRouter = Router();
 
@@ -27,5 +30,8 @@ router.use("/driver", driverRouter);
 router.use("/drivers", driverPublicRouter);
 router.use("/admin", adminRouter);
 router.use("/ai", aiChatRouter);
+router.use("/config", configRouter);
+router.use("/mapbox", mapboxRouter);
+router.use("/upload", uploadRouter);
 
 export default router;

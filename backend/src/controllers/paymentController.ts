@@ -6,8 +6,16 @@ import { createRazorpayOrder, verifyRazorpaySignature } from "../services/paymen
 import { AuthRequest } from "../middlewares/auth";
 import { sendBookingConfirmationEmail } from "../services/emailService";
 import { logger } from "../lib/logger";
+import { isRazorpayAvailable } from "../lib/envValidator";
 
 export async function createOrder(req: AuthRequest, res: Response): Promise<void> {
+  // Graceful fallback when Razorpay keys are not configured
+  if (!isRazorpayAvailable()) {
+    logger.warn("Razorpay keys not set — payment service unavailable");
+    res.status(503).json({ success: false, message: "Payment service is currently unavailable" });
+    return;
+  }
+
   const { bookingId } = req.body;
   const userId = req.user!.id;
 
@@ -63,6 +71,13 @@ export async function createOrder(req: AuthRequest, res: Response): Promise<void
 }
 
 export async function verifyPayment(req: AuthRequest, res: Response): Promise<void> {
+  // Graceful fallback when Razorpay keys are not configured
+  if (!isRazorpayAvailable()) {
+    logger.warn("Razorpay keys not set — payment verification unavailable");
+    res.status(503).json({ success: false, message: "Payment service is currently unavailable" });
+    return;
+  }
+
   const { razorpayOrderId, razorpayPaymentId, razorpaySignature, bookingId } = req.body;
 
   if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature || !bookingId) {
