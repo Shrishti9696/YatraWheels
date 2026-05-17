@@ -2,11 +2,12 @@ import { Router } from "express";
 import { protect, driverOnly } from "../middlewares/auth";
 import {
   getDriverProfile,
-  getDriverDashboard,
   toggleAvailability,
-  getDriverBookings,
+  updateLocation,
+  getDriverEarnings,
+  updateTripStatus,
+  uploadLicense,
   getAvailableDrivers,
-  updateDriverProfile,
 } from "../controllers/driverController";
 
 const router = Router();
@@ -14,10 +15,11 @@ const router = Router();
 router.use(protect, driverOnly);
 
 router.get("/profile", getDriverProfile);
-router.get("/dashboard", getDriverDashboard);
-router.put("/availability", toggleAvailability);
-router.get("/bookings", getDriverBookings);
-router.put("/profile", updateDriverProfile);
+router.patch("/availability", toggleAvailability);
+router.patch("/location", updateLocation);
+router.get("/earnings", getDriverEarnings);
+router.patch("/trips/:bookingId/status", updateTripStatus);
+router.post("/license", uploadLicense);
 
 // Also available to all authenticated users (for booking flow)
 const publicRouter = Router();

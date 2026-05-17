@@ -15,6 +15,8 @@ export interface IVehicle extends Document {
   reviewCount: number;
   isAvailable: boolean;
   isApproved: boolean;
+  approvalStatus: "pending" | "approved" | "rejected";
+  rejectionReason?: string;
   createdAt: Date;
 }
 
@@ -33,7 +35,10 @@ const vehicleSchema = new Schema<IVehicle>(
     rating: { type: Number, default: 4.5, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },
     isAvailable: { type: Boolean, default: true },
-    isApproved: { type: Boolean, default: true },
+    isApproved: { type: Boolean, default: false },
+    approvalStatus: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+    rejectionReason: { type: String },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

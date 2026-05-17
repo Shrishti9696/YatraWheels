@@ -60,6 +60,29 @@ export async function getVehicles(filters?: VehicleFilters): Promise<Vehicle[]> 
   }));
 }
 
+export async function aiSearchVehicles(query: string): Promise<{ vehicles: Vehicle[], aiSuggestion: string | null, fallbackSearch?: boolean }> {
+  const data = await apiFetch<{ vehicles: any[], aiSuggestion: string | null, fallbackSearch?: boolean }>("/vehicles/ai-search", {
+    method: "POST",
+    body: JSON.stringify({ query })
+  });
+
+  const vehicles = data.vehicles.map((v) => ({
+    id: v._id,
+    name: v.name,
+    type: v.type,
+    capacity: v.capacity,
+    pricePerDay: v.pricePerDay,
+    features: v.features,
+    imageUrl: v.imageUrl,
+    rating: v.rating,
+    reviewCount: v.reviewCount,
+    available: v.isAvailable,
+    location: v.location,
+  }));
+
+  return { vehicles, aiSuggestion: data.aiSuggestion, fallbackSearch: data.fallbackSearch };
+}
+
 export async function getVehicleById(id: string): Promise<Vehicle | null> {
   try {
     const v = await apiFetch<any>(`/vehicles/${id}`);
@@ -81,133 +104,8 @@ export async function getVehicleById(id: string): Promise<Vehicle | null> {
   }
 }
 
-export async function searchRoutes(from: string, to: string): Promise<Route[]> {
-  if (!from && !to) return mockRoutes;
-  const fromLower = from?.toLowerCase() || "";
-  const toLower = to?.toLowerCase() || "";
-  return mockRoutes.filter(
-    (r) =>
-      (fromLower ? r.from.toLowerCase().includes(fromLower) : true) &&
-      (toLower ? r.to.toLowerCase().includes(toLower) : true)
-  );
-}
-
-export async function generateTripPlan(params: {
-  destination: string;
-  days: number;
-  people: number;
-  budget: string;
-}): Promise<TripPlan> {
-  try {
-    const token = authHeaders()["Authorization"];
-    if (!token) throw new Error("Not authenticated");
-
-    const data = await apiFetch<{
-      vehicleRecommendation: any;
-      estimatedCost: number;
-      highlights: string[];
-      trip: { itinerary: any[] };
-    }>("/trips/generate", {
-      method: "POST",
-      body: JSON.stringify({
-        destination: params.destination,
-        days: params.days,
-        passengers: params.people,
-        budget: params.budget,
-      }),
-    });
-
-    const v = data.vehicleRecommendation;
-    const vehicle: Vehicle = v
-      ? {
-          id: v._id,
-          name: v.name,
-          type: v.type,
-          capacity: v.capacity,
-          pricePerDay: v.pricePerDay,
-          features: v.features,
-          imageUrl: v.imageUrl,
-          rating: v.rating,
-          reviewCount: v.reviewCount,
-          available: v.isAvailable,
-          location: v.location,
-        }
-      : {
-          id: "default",
-          name: "Toyota Innova Crysta",
-          type: "van",
-          capacity: 7,
-          pricePerDay: 4500,
-          features: ["AC", "GPS"],
-          imageUrl: "",
-          rating: 4.8,
-          reviewCount: 300,
-          available: true,
-          location: "Delhi",
-        };
-
-    return {
-      destination: params.destination,
-      days: params.days,
-      vehicleRecommendation: vehicle,
-      estimatedCost: data.estimatedCost,
-      itinerary: data.trip.itinerary,
-      highlights: data.highlights,
-    };
-  } catch {
-    const { Vehicle: _V, mockVehicles } = await import("../data/mockData");
-    const vehicle = mockVehicles.find((v) => v.capacity >= params.people) || mockVehicles[0];
-    const itinerary = Array.from({ length: params.days }).map((_, i) => ({
-      day: i + 1,
-      title: i === 0 ? "Arrival & Acclimatization" : i === params.days - 1 ? "Departure" : `Exploring ${params.destination}`,
-      activities: [
-        { time: "09:00 AM", activity: "Morning Sightseeing", duration: "2h" },
-        { time: "01:00 PM", activity: "Local Cuisine Experience", duration: "1.5h" },
-        { time: "04:00 PM", activity: "Cultural Walk / Shopping", duration: "3h" },
-      ],
-      accommodation: "Premium Boutique Resort",
-      meals: "Breakfast included at hotel. Lunch & Dinner at local authentic spots.",
-    }));
-    return {
-      destination: params.destination,
-      days: params.days,
-      vehicleRecommendation: vehicle,
-      estimatedCost: vehicle.pricePerDay * params.days + params.people * 5000,
-      itinerary,
-      highlights: ["Curated local experiences", "Premium transport", "24/7 concierge support", "Flexible itinerary"],
-    };
-  }
-}
-
-export async function getBookings(): Promise<Booking[]> {
-  try {
-    const token = authHeaders()["Authorization"];
-    if (!token) return mockBookings;
-
-    const data = await apiFetch<any[]>("/bookings/my");
-    return data.map((b) => ({
-      id: b._id,
-      vehicleId: b.vehicleId?._id || b.vehicleId,
-      vehicleName: b.vehicleId?.name || "Vehicle",
-      vehicleImage: b.vehicleId?.imageUrl || "",
-      from: b.pickupLocation,
-      to: b.dropLocation,
-      date: b.date,
-      passengers: b.passengers,
-      totalPrice: b.totalPrice,
-      status: b.status,
-    }));
-  } catch {
-    return mockBookings;
-  }
-}
-
-export async function getDestinations(): Promise<Destination[]> {
-  return mockDestinations;
-}
-
-export async function getPopularRoutes(): Promise<Route[]> {
-  return mockRoutes.filter((r) => r.popular);
+export async function getBookedDates(vehicleId: string): Promise<{ start: string, end: string }[]> {
+  return apiFetch(`/bookings/vehicle/${vehicleId}/booked-dates`);
 }
 
 export async function createBookingAPI(data: {
@@ -217,11 +115,20 @@ export async function createBookingAPI(data: {
   date: string;
   returnDate?: string;
   passengers: number;
-}): Promise<{ booking: any; pricing: any }> {
+  withDriver?: boolean;
+}): Promise<any> {
   return apiFetch("/bookings", {
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+export async function getBookingById(id: string): Promise<any> {
+  return apiFetch(`/bookings/${id}`);
+}
+
+export async function cancelBookingAPI(id: string): Promise<any> {
+  return apiFetch(`/bookings/${id}/cancel`, { method: "PATCH" });
 }
 
 export async function createPaymentOrder(bookingId: string): Promise<{
@@ -230,6 +137,7 @@ export async function createPaymentOrder(bookingId: string): Promise<{
   currency: string;
   paymentId: string;
   keyId: string;
+  fallback?: boolean;
 }> {
   return apiFetch("/payments/create-order", {
     method: "POST",
@@ -247,4 +155,33 @@ export async function verifyPaymentAPI(data: {
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+// ... (keep other functions like getBookings, getDestinations etc)
+export async function getBookingsList(): Promise<Booking[]> {
+  try {
+    const data = await apiFetch<any[]>("/bookings/my");
+    return data.map((b) => ({
+      id: b._id,
+      vehicleId: b.vehicleId?._id || b.vehicleId,
+      vehicleName: b.vehicleId?.name || "Vehicle",
+      vehicleImage: b.vehicleId?.imageUrl || "",
+      from: b.pickupLocation,
+      to: b.dropLocation,
+      date: b.date,
+      passengers: b.passengers,
+      totalPrice: b.totalPrice,
+      status: b.status,
+    }));
+  } catch {
+    return mockBookings;
+  }
+}
+export async function getDestinations(): Promise<Destination[]> { return mockDestinations; }
+export async function getPopularRoutes(): Promise<Route[]> { return mockRoutes.filter((r) => r.popular); }
+export async function searchRoutes(from: string, to: string): Promise<Route[]> {
+  if (!from && !to) return mockRoutes;
+  const fromLower = from?.toLowerCase() || "";
+  const toLower = to?.toLowerCase() || "";
+  return mockRoutes.filter((r) => (fromLower ? r.from.toLowerCase().includes(fromLower) : true) && (toLower ? r.to.toLowerCase().includes(toLower) : true));
 }

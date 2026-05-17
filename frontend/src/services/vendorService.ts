@@ -18,5 +18,8 @@ export const addVehicle = (data: any) => req<any>(`${API}/vehicles`, { method: "
 export const updateVehicle = (id: string, data: any) => req<any>(`${API}/vehicles/${id}`, { method: "PUT", body: JSON.stringify(data) });
 export const deleteVehicle = (id: string) => req<any>(`${API}/vehicles/${id}`, { method: "DELETE" });
 export const getMyBookings = () => req<any[]>(`${API}/bookings`);
+export const getEarnings = () => req<any>(`${API}/earnings`);
 export const updateBookingStatus = (id: string, status: string) =>
   req<any>(`${API}/bookings/${id}/status`, { method: "PUT", body: JSON.stringify({ status }) });
+export const updateBookingStatusAction = (id: string, action: "accept" | "reject", reason?: string) =>
+  req<any>(`${API}/bookings/${id}/status`, { method: "PATCH", body: JSON.stringify({ action, reason }) });

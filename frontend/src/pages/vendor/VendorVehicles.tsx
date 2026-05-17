@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyVehicles, addVehicle, updateVehicle, deleteVehicle } from "@/services/vendorService";
+import { toast } from "sonner";
 
 const NAV = [
   { href: "/vendor", label: "Dashboard", icon: LayoutDashboard },
@@ -63,22 +64,22 @@ export default function VendorVehicles() {
         setVehicles(vs => [created, ...vs]);
       }
       setShowForm(false);
-      setSuccess(editId ? "Vehicle updated!" : "Vehicle added!");
-      setTimeout(() => setSuccess(""), 3000);
+      toast.success(editId ? "Vehicle updated successfully!" : "Vehicle added successfully!");
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this vehicle?")) return;
+    if (!confirm("Are you sure you want to delete this vehicle? It will be removed from your active fleet.")) return;
     try {
       await deleteVehicle(id);
       setVehicles(vs => vs.filter(v => v._id !== id));
+      toast.success("Vehicle removed from fleet");
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     }
   }
 

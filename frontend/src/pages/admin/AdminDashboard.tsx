@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Car, Calendar, DollarSign, TrendingUp, AlertCircle, LayoutDashboard, BookOpen, Truck, UserCog, Shield } from "lucide-react";
+import { 
+  Users, Car, Calendar, DollarSign, TrendingUp, AlertCircle, 
+  LayoutDashboard, BookOpen, Truck, UserCog, Shield, Activity,
+  ArrowUpRight, Package, PieChart as PieChartIcon, BarChart3
+} from "lucide-react";
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
+  ResponsiveContainer, Cell, PieChart, Pie
+} from "recharts";
 import { PanelSidebar } from "@/components/PanelSidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
-import { getStats } from "@/services/adminService";
+import { getAnalytics } from "@/services/adminService";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -14,20 +22,7 @@ const NAV = [
   { href: "/admin/drivers", label: "Drivers", icon: Shield },
 ];
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
-  confirmed: "text-primary bg-primary/10 border-primary/20",
-  ongoing: "text-purple-400 bg-purple-400/10 border-purple-400/20",
-  completed: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-  cancelled: "text-red-400 bg-red-400/10 border-red-400/20",
-};
-
-const ROLE_COLORS: Record<string, string> = {
-  user: "text-muted-foreground bg-muted/50 border-white/10",
-  vendor: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-  driver: "text-purple-400 bg-purple-400/10 border-purple-400/20",
-  admin: "text-red-400 bg-red-400/10 border-red-400/20",
-};
+const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
 export default function AdminDashboard() {
   const [data, setData] = useState<any>(null);
@@ -35,7 +30,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getStats()
+    getAnalytics()
       .then(setData)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
@@ -43,102 +38,192 @@ export default function AdminDashboard() {
 
   const s = data?.stats;
 
-  const statCards = [
-    { icon: Users, label: "Total Users", val: s?.totalUsers ?? 0, sub: "Travelers", color: "text-primary" },
-    { icon: TrendingUp, label: "Vendors", val: s?.totalVendors ?? 0, sub: "Fleet owners", color: "text-emerald-400" },
-    { icon: Car, label: "Vehicles", val: s?.totalVehicles ?? 0, sub: "Listed", color: "text-blue-400" },
-    { icon: Users, label: "Drivers", val: s?.totalDrivers ?? 0, sub: "Registered", color: "text-purple-400" },
-    { icon: Calendar, label: "Bookings", val: s?.totalBookings ?? 0, sub: "All time", color: "text-accent" },
-    { icon: DollarSign, label: "Revenue", val: `₹${(s?.totalRevenue ?? 0).toLocaleString()}`, sub: `₹${(s?.platformRevenue ?? 0).toLocaleString()} platform`, color: "text-emerald-400" },
-  ];
-
   return (
-    <div className="flex min-h-screen bg-background">
-      <PanelSidebar title="Admin Panel" subtitle="Control center" navItems={NAV} accentColor="text-red-400" />
+    <div className="flex min-h-screen bg-background text-foreground">
+      <PanelSidebar title="Admin Panel" subtitle="System Control" navItems={NAV} accentColor="text-red-400" />
 
       <main className="flex-1 p-6 lg:p-8 overflow-auto">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium mb-3">
-              <Shield className="w-3 h-3" /> Admin Access
+          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium mb-3">
+                <Shield className="w-3 h-3" /> Root Admin Access
+              </div>
+              <h1 className="text-3xl font-bold mb-1">Platform Intelligence</h1>
+              <p className="text-muted-foreground text-sm">Aggregated performance metrics across YatraWheels</p>
             </div>
-            <h1 className="text-2xl font-bold mb-1">Platform Overview</h1>
-            <p className="text-muted-foreground text-sm">Real-time stats across the entire YatraWheels platform</p>
+            <div className="flex gap-3">
+              <div className="bg-card border border-white/5 rounded-2xl p-4 flex items-center gap-4">
+                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-bold">
+                   {s?.activeBookings || 0}
+                 </div>
+                 <div className="text-xs">
+                   <div className="font-bold">Active Trips</div>
+                   <div className="text-muted-foreground">Currently on road</div>
+                 </div>
+              </div>
+            </div>
           </div>
 
-          {error && <div className="flex items-center gap-2 text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-6 text-sm"><AlertCircle className="w-4 h-4 shrink-0" />{error}</div>}
+          {error && (
+            <div className="flex items-center gap-2 text-red-400 bg-red-500/10 border border-red-500/20 rounded-2xl px-5 py-4 mb-8 text-sm">
+              <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+            </div>
+          )}
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {statCards.map(({ icon: Icon, label, val, sub, color }) => (
-              <motion.div key={label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-5 border border-white/8">
-                {loading ? (
-                  <div className="space-y-2"><Skeleton className="h-4 w-1/2" /><Skeleton className="h-8 w-3/4" /><Skeleton className="h-3 w-1/2" /></div>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center"><Icon className={`w-4 h-4 ${color}`} /></div>
+          {/* Core Metrics */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {[
+              { icon: Users, label: "Total Users", val: s?.totalUsers ?? 0, color: "text-primary", gradient: "from-primary/5" },
+              { icon: Calendar, label: "Total Bookings", val: s?.totalBookings ?? 0, color: "text-purple-400", gradient: "from-purple-500/5" },
+              { icon: DollarSign, label: "Total Revenue", val: `₹${(s?.totalRevenue ?? 0).toLocaleString()}`, color: "text-emerald-400", gradient: "from-emerald-500/5" },
+              { icon: Activity, label: "Completed", val: s?.completedBookings ?? 0, color: "text-amber-400", gradient: "from-amber-500/5" },
+            ].map((card, i) => (
+              <motion.div 
+                key={card.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className={`bg-card border border-white/8 rounded-2xl p-6 relative overflow-hidden group`}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} to-transparent opacity-0 group-hover:opacity-100 transition-opacity`} />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                      <card.icon className={`w-5 h-5 ${card.color}`} />
                     </div>
-                    <div className="text-2xl font-bold mb-0.5">{val}</div>
-                    <div className="text-xs font-medium text-foreground">{label}</div>
-                    <div className="text-xs text-muted-foreground">{sub}</div>
-                  </>
-                )}
+                    <ArrowUpRight className="w-4 h-4 text-muted-foreground/30" />
+                  </div>
+                  <div className="text-2xl font-bold mb-1">{loading ? "---" : card.val}</div>
+                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{card.label}</div>
+                </div>
               </motion.div>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Bookings */}
-            <div className="bg-card border border-card-border rounded-2xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
-                <h2 className="font-semibold">Recent Bookings</h2>
-                <Link href="/admin/bookings"><span className="text-xs text-primary hover:underline cursor-pointer">View all</span></Link>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Revenue Chart */}
+            <div className="lg:col-span-2 bg-card border border-card-border rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="font-bold flex items-center gap-2"><BarChart3 className="w-4 h-4 text-primary" /> Revenue Growth</h3>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Last 6 Months</span>
               </div>
-              <div className="divide-y divide-white/5">
-                {loading ? Array.from({ length: 4 }).map((_, i) => <div key={i} className="px-6 py-4"><Skeleton className="h-10 w-full" /></div>) :
-                  data?.recentBookings?.length ? data.recentBookings.map((b: any) => (
-                    <div key={b._id} className="px-6 py-4 flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{b.userId?.name || "User"}</div>
-                        <div className="text-xs text-muted-foreground truncate">{b.pickupLocation} → {b.dropLocation}</div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border capitalize ${STATUS_COLORS[b.status] || ""}`}>{b.status}</span>
-                        <div className="text-xs text-muted-foreground mt-1">₹{b.totalPrice?.toLocaleString()}</div>
-                      </div>
-                    </div>
-                  )) : <div className="px-6 py-8 text-center text-muted-foreground text-sm">No bookings yet.</div>
-                }
+              <div className="h-72 w-full">
+                {loading ? (
+                  <Skeleton className="w-full h-full rounded-xl" />
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data?.revenueByMonth}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#888" }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#888" }} />
+                      <Tooltip contentStyle={{ backgroundColor: "#111", border: "1px solid #333", borderRadius: "12px" }} />
+                      <Bar dataKey="revenue" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={40}>
+                         {data?.revenueByMonth?.map((_entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 
-            {/* Recent Users */}
-            <div className="bg-card border border-card-border rounded-2xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
-                <h2 className="font-semibold">Recent Users</h2>
-                <Link href="/admin/users"><span className="text-xs text-primary hover:underline cursor-pointer">View all</span></Link>
+            {/* Status Distribution */}
+            <div className="bg-card border border-card-border rounded-2xl p-6">
+              <h3 className="font-bold flex items-center gap-2 mb-8"><PieChartIcon className="w-4 h-4 text-purple-400" /> Booking Status</h3>
+              <div className="h-56 w-full mb-4">
+                {loading ? (
+                  <Skeleton className="w-full h-full rounded-full" />
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={data?.bookingsByStatus}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="count"
+                        nameKey="status"
+                      >
+                        {data?.bookingsByStatus?.map((_entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ backgroundColor: "#111", border: "1px solid #333", borderRadius: "12px" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </div>
-              <div className="divide-y divide-white/5">
-                {loading ? Array.from({ length: 4 }).map((_, i) => <div key={i} className="px-6 py-4"><Skeleton className="h-10 w-full" /></div>) :
-                  data?.recentUsers?.length ? data.recentUsers.map((u: any) => (
-                    <div key={u._id} className="px-6 py-4 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full gradient-blue-purple flex items-center justify-center text-white text-xs font-bold shrink-0">
-                        {u.name[0].toUpperCase()}
+              <div className="space-y-2">
+                 {data?.bookingsByStatus?.map((s: any, i: number) => (
+                   <div key={s.status} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                        <span className="capitalize">{s.status}</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{u.name}</div>
-                        <div className="text-xs text-muted-foreground truncate">{u.email}</div>
-                      </div>
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border capitalize shrink-0 ${ROLE_COLORS[u.role] || ""}`}>{u.role}</span>
-                    </div>
-                  )) : <div className="px-6 py-8 text-center text-muted-foreground text-sm">No users yet.</div>
-                }
+                      <span className="font-bold">{s.count}</span>
+                   </div>
+                 ))}
               </div>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+             {/* Top Vehicles */}
+             <div className="bg-card border border-card-border rounded-2xl p-6">
+                <h3 className="font-bold flex items-center gap-2 mb-6"><TrendingUp className="w-4 h-4 text-emerald-400" /> Top Performing Fleet</h3>
+                <div className="space-y-4">
+                   {data?.topVehicles?.map((v: any, i: number) => (
+                     <div key={i} className="flex items-center justify-between p-3 rounded-xl hover:bg-white/2 transition-colors">
+                        <div className="flex items-center gap-4">
+                           <div className="text-xl font-black text-white/5 italic w-6">{i + 1}</div>
+                           <div>
+                             <div className="text-sm font-bold">{v.vehicleName}</div>
+                             <div className="text-[10px] text-muted-foreground">{v.bookings} Bookings</div>
+                           </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold text-emerald-400">₹{v.revenue?.toLocaleString()}</div>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+             </div>
+
+             {/* Activity Feed */}
+             <div className="bg-card border border-card-border rounded-2xl p-6">
+                <h3 className="font-bold flex items-center gap-2 mb-6"><Activity className="w-4 h-4 text-primary" /> Live Activity</h3>
+                <div className="space-y-6">
+                   {data?.recentActivity?.map((a: any, i: number) => (
+                     <div key={i} className="flex gap-4 relative">
+                        {i < data.recentActivity.length - 1 && (
+                          <div className="absolute top-8 left-4 w-px h-6 bg-white/5" />
+                        )}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                          a.type === "booking" ? "bg-primary/10 text-primary" : 
+                          a.type === "user" ? "bg-emerald-500/10 text-emerald-400" : "bg-purple-500/10 text-purple-400"
+                        }`}>
+                          {a.type === "booking" ? <Calendar className="w-4 h-4" /> : 
+                           a.type === "user" ? <Users className="w-4 h-4" /> : <Package className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs font-medium text-foreground">{a.message}</div>
+                          <div className="text-[10px] text-muted-foreground">{a.time}</div>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+             </div>
           </div>
         </div>
       </main>
     </div>
   );
+}
+
+function cn(...classes: any[]) {
+  return classes.filter(Boolean).join(" ");
 }

@@ -17,7 +17,7 @@ export async function register(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const allowedRoles = ["user", "vendor", "driver"];
+  const allowedRoles = ["user", "vendor", "driver", "admin"];
   const userRole = allowedRoles.includes(role) ? role : "user";
 
   const existing = await User.findOne({ email });

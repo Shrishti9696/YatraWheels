@@ -1,15 +1,15 @@
 import { useBooking } from "@/context/BookingContext";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams, useLocation } from "wouter";
-import { ArrowLeft, CheckCircle, Star, Users, Shield, Calendar, MapPin, CreditCard, AlertCircle } from "lucide-react";
+import { 
+  ArrowLeft, CheckCircle, Star, Users, Shield, Calendar, MapPin, 
+  CreditCard, AlertCircle, Car, User, Info, Check, Clock, X
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ComingSoonBadge } from "@/components/ComingSoonBadge";
-import { useFeatures } from "@/context/FeatureContext";
-import { mockVehicles } from "@/data/mockData";
-import { useState } from "react";
-import { createBookingAPI, createPaymentOrder, verifyPaymentAPI } from "@/services/api";
+import { useState, useEffect } from "react";
+import { createBookingAPI, createPaymentOrder, verifyPaymentAPI, getBookedDates } from "@/services/api";
 import { getToken } from "@/services/authService";
-import { RouteMap } from "@/components/RouteMap";
+import { toast } from "sonner";
 
 declare global {
   interface Window {
@@ -18,335 +18,233 @@ declare global {
 }
 
 export default function BookingDetails() {
-  const { features } = useFeatures();
   const { id } = useParams<{ id: string }>();
-  const { selectedVehicle: ctxVehicle, tripParams, user } = useBooking();
-  const [confirmed, setConfirmed] = useState(false);
+  const { selectedVehicle: ctxVehicle, tripParams, setTripParams, user } = useBooking();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [bookingRef, setBookingRef] = useState("");
+  const [bookedDates, setBookedDates] = useState<{start: string, end: string}[]>([]);
+  const [withDriver, setWithDriver] = useState(false);
   const [, navigate] = useLocation();
 
-  const vehicle = ctxVehicle || mockVehicles.find((v) => v.id === id) || mockVehicles[0];
+  // Redirect if no vehicle selected
+  useEffect(() => {
+    if (!ctxVehicle && !id) navigate("/booking");
+  }, [ctxVehicle, id]);
 
-  const days = 2;
-  const subtotal = vehicle.pricePerDay * days;
-  const tax = Math.round(subtotal * 0.18);
-  const serviceFee = 499;
-  const total = subtotal + tax + serviceFee;
+  const vehicle = ctxVehicle!;
 
-  async function handleConfirm() {
-    setError("");
+  // Fetch booked dates for the vehicle
+  useEffect(() => {
+    if (vehicle?.id) {
+      getBookedDates(vehicle.id).then(setBookedDates).catch(console.error);
+    }
+  }, [vehicle?.id]);
 
+  // Price Logic
+  const startDate = tripParams.date ? new Date(tripParams.date) : new Date();
+  const endDate = tripParams.returnDate ? new Date(tripParams.returnDate) : new Date(startDate.getTime() + 86400000);
+  const days = Math.ceil(Math.abs(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+  
+  const basePrice = days * vehicle.pricePerDay;
+  const driverFee = withDriver ? days * 500 : 0;
+  const platformFee = Math.round(basePrice * 0.1);
+  const total = basePrice + driverFee + platformFee;
+
+  async function handleBooking() {
     if (!user) {
+      toast.error("Please sign in to continue");
       navigate("/auth");
-      return;
-    }
-
-    if (!getToken()) {
-      navigate("/auth");
-      return;
-    }
-
-    if (!window.Razorpay) {
-      setError("Payment system is loading. Please try again in a moment.");
       return;
     }
 
     setLoading(true);
+    setError("");
 
     try {
-      const pickupLocation = tripParams.from || "Delhi, India";
-      const dropLocation = tripParams.to || "Agra, India";
-      const date = tripParams.date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-      const passengers = tripParams.passengers || 2;
-
-      const { booking, pricing } = await createBookingAPI({
+      const bookingData = await createBookingAPI({
         vehicleId: vehicle.id,
-        pickupLocation,
-        dropLocation,
-        date,
-        passengers,
+        pickupLocation: tripParams.from || "Delhi",
+        dropLocation: tripParams.to || tripParams.from || "Delhi",
+        date: startDate.toISOString(),
+        returnDate: endDate.toISOString(),
+        passengers: tripParams.passengers,
+        withDriver
       });
 
-      const orderData = await createPaymentOrder(booking._id);
+      const orderData = await createPaymentOrder(bookingData._id);
+
+      if (orderData.fallback) {
+        toast.success("Booking created! You can pay at pickup.");
+        navigate(`/bookings/${bookingData._id}`);
+        return;
+      }
 
       const options = {
         key: orderData.keyId,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "YatraWheels",
-        description: `${vehicle.name} — ${pickupLocation} to ${dropLocation}`,
+        description: `Booking for ${vehicle.name}`,
         order_id: orderData.orderId,
-        prefill: {
-          name: user.name,
-          email: user.email,
-        },
-        theme: { color: "#5b67f5" },
-        modal: {
-          ondismiss() {
-            setLoading(false);
-            setError("Payment was cancelled.");
-          },
-        },
-        handler: async (response: {
-          razorpay_order_id: string;
-          razorpay_payment_id: string;
-          razorpay_signature: string;
-        }) => {
+        handler: async (response: any) => {
           try {
             await verifyPaymentAPI({
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
-              bookingId: booking._id,
+              bookingId: bookingData._id
             });
-            setBookingRef(booking._id.slice(-8).toUpperCase());
-            setConfirmed(true);
-          } catch (verifyErr: any) {
-            setError(verifyErr.message || "Payment verification failed.");
-          } finally {
-            setLoading(false);
+            toast.success("Payment Successful!");
+            navigate(`/bookings/${bookingData._id}`);
+          } catch (e: any) {
+            setError("Payment verification failed. Please contact support.");
           }
         },
+        prefill: { name: user.name, email: user.email },
+        theme: { color: "#0D7377" }
       };
 
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err: any) {
+      setError(err.message || "Failed to create booking. Please try again.");
+    } finally {
       setLoading(false);
-      setError(err.message || "Something went wrong. Please try again.");
     }
   }
 
-  if (confirmed) {
-    return (
-      <main className="pt-24 pb-20 min-h-screen flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-md"
-          data-testid="booking-confirmed"
-        >
-          <div className="w-20 h-20 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-400" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">Booking Confirmed!</h2>
-          <p className="text-muted-foreground mb-2">
-            Your {vehicle.name} has been reserved and payment received.
-          </p>
-          <p className="text-sm text-muted-foreground mb-8">
-            Booking ID: <span className="font-mono text-primary">YW-{bookingRef}</span>
-          </p>
-          <div className="flex flex-col gap-3">
-            <Link href="/dashboard">
-              <Button className="w-full gradient-blue-purple text-white border-0" data-testid="button-view-dashboard">
-                View in Dashboard
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button variant="outline" className="w-full border-white/10 hover:bg-white/5" data-testid="button-back-home">
-                Back to Home
-              </Button>
-            </Link>
-          </div>
-        </motion.div>
-      </main>
-    );
-  }
-
   return (
-    <main className="pt-24 pb-20 min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Link href="/booking" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors" data-testid="link-back-to-booking">
-            <ArrowLeft className="w-4 h-4" />
-            Back to vehicles
-          </Link>
+    <main className="pt-24 pb-20 min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto px-4">
+        <Link href="/booking" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Search
+        </Link>
 
-          <h1 className="text-2xl sm:text-3xl font-bold mb-8" data-testid="text-booking-details-heading">Booking Details</h1>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Column: Vehicle & Options */}
+          <div className="lg:col-span-8 space-y-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+               <div className="relative h-72">
+                 <img src={vehicle.imageUrl} alt={vehicle.name} className="w-full h-full object-cover" />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                 <div className="absolute bottom-6 left-6">
+                   <h1 className="text-3xl font-bold text-white mb-2">{vehicle.name}</h1>
+                   <div className="flex gap-2">
+                     <span className="px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-bold uppercase tracking-wider">{vehicle.type}</span>
+                     <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold">
+                       <Star className="w-3 h-3 fill-amber-400" /> {vehicle.rating} ({vehicle.reviewCount} reviews)
+                     </span>
+                   </div>
+                 </div>
+               </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <div className="lg:col-span-3 space-y-5">
-              <div className="bg-card border border-card-border rounded-2xl overflow-hidden">
-                <div className="relative h-48">
-                  <img src={vehicle.imageUrl} alt={vehicle.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/70 to-transparent" />
-                  <div className="absolute bottom-4 left-4">
-                    <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-primary/20 text-primary border border-primary/30 capitalize">
-                      {vehicle.type}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-5">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h2 className="text-xl font-bold">{vehicle.name}</h2>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{vehicle.rating}</span>
-                        <span className="text-sm text-muted-foreground">({vehicle.reviewCount} reviews)</span>
+               <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-6 border-b border-white/5">
+                 <div className="flex items-center gap-4">
+                   <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary"><Users className="w-6 h-6" /></div>
+                   <div><div className="text-xs text-muted-foreground">Capacity</div><div className="font-bold">{vehicle.capacity} Seats</div></div>
+                 </div>
+                 <div className="flex items-center gap-4">
+                   <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500"><MapPin className="w-6 h-6" /></div>
+                   <div><div className="text-xs text-muted-foreground">Location</div><div className="font-bold">{vehicle.location}</div></div>
+                 </div>
+                 <div className="flex items-center gap-4">
+                   <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500"><Shield className="w-6 h-6" /></div>
+                   <div><div className="text-xs text-muted-foreground">Insurance</div><div className="font-bold">Fully Insured</div></div>
+                 </div>
+               </div>
+
+               <div className="p-8">
+                 <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><SlidersHorizontal className="w-5 h-5 text-primary" /> Booking Options</h3>
+                 <div 
+                   onClick={() => setWithDriver(!withDriver)}
+                   className={cn(
+                     "p-6 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between group",
+                     withDriver ? "bg-primary/5 border-primary shadow-lg shadow-primary/5" : "bg-white/[0.02] border-white/5 hover:border-white/10"
+                   )}
+                 >
+                   <div className="flex items-center gap-4">
+                      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-colors", withDriver ? "bg-primary text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground")}>
+                        <User className="w-7 h-7" />
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xl font-bold">₹{vehicle.pricePerDay.toLocaleString()}</div>
-                      <div className="text-xs text-muted-foreground">per day</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 mb-4 text-sm text-muted-foreground">
-                    <Users className="w-4 h-4" />
-                    <span>Up to {vehicle.capacity} passengers</span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {vehicle.features.map((f) => (
-                      <div key={f} className="flex items-center gap-1 px-3 py-1 rounded-full bg-muted/50 text-xs text-muted-foreground">
-                        <CheckCircle className="w-3 h-3 text-primary/60" />
-                        {f}
+                      <div>
+                        <div className="font-bold">Add Professional Driver</div>
+                        <div className="text-xs text-muted-foreground">Experienced and verified drivers for a stress-free trip.</div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                   </div>
+                   <div className="text-right">
+                      <div className="font-bold text-primary">₹500 / day</div>
+                      <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center mt-2 ml-auto", withDriver ? "border-primary bg-primary text-white" : "border-white/10")}>
+                        {withDriver && <Check className="w-4 h-4" />}
+                      </div>
+                   </div>
+                 </div>
+               </div>
+            </motion.div>
+          </div>
 
-              <div className="bg-card border border-card-border rounded-2xl p-5 space-y-4">
-                <h3 className="font-semibold">Trip Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <div className="text-xs text-muted-foreground">Pickup</div>
-                      <div className="text-sm font-medium">{tripParams.from || "Delhi, India"}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                    <div>
-                      <div className="text-xs text-muted-foreground">Drop-off</div>
-                      <div className="text-sm font-medium">{tripParams.to || "Agra, India"}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Calendar className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                    <div>
-                      <div className="text-xs text-muted-foreground">Date</div>
-                      <div className="text-sm font-medium">{tripParams.date || "Dec 15, 2025"}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Users className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                    <div>
-                      <div className="text-xs text-muted-foreground">Passengers</div>
-                      <div className="text-sm font-medium">{tripParams.passengers || 2}</div>
-                    </div>
-                  </div>
+          {/* Right Column: Checkout */}
+          <div className="lg:col-span-4">
+            <div className="bg-card border border-white/5 rounded-3xl p-8 sticky top-24 shadow-2xl">
+              <h3 className="text-xl font-bold mb-6">Fare Summary</h3>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Vehicle Rental ({days} days)</span>
+                  <span className="font-medium">₹{basePrice.toLocaleString()}</span>
                 </div>
-
-                {/* Route map */}
-                {features.LIVE_TRACKING ? (
-                  <RouteMap
-                    from={tripParams.from || "Delhi, India"}
-                    to={tripParams.to || "Agra, India"}
-                    className="h-52 mt-2"
-                  />
-                ) : (
-                  <div className="h-52 mt-2 bg-muted/30 border border-dashed border-white/10 rounded-xl flex items-center justify-center p-4">
-                    <div className="text-center">
-                      <MapPin className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
-                      <div className="text-xs font-medium">Live tracking coming soon</div>
-                      <div className="text-[10px] text-muted-foreground">Map services are being configured.</div>
-                    </div>
+                {withDriver && (
+                  <div className="flex justify-between text-sm text-primary">
+                    <span className="flex items-center gap-1"><User className="w-3 h-3" /> Driver Fee</span>
+                    <span className="font-medium">₹{driverFee.toLocaleString()}</span>
                   </div>
                 )}
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Platform Fee</span>
+                  <span className="font-medium">₹{platformFee.toLocaleString()}</span>
+                </div>
+                <div className="pt-4 border-t border-white/5 flex justify-between">
+                  <span className="font-bold text-lg">Grand Total</span>
+                  <span className="font-bold text-2xl text-primary">₹{total.toLocaleString()}</span>
+                </div>
               </div>
 
-              <div className="bg-card border border-card-border rounded-2xl p-5">
-                <h3 className="font-semibold mb-4">Payment Method</h3>
-                {features.PAYMENTS ? (
-                  <div className="flex items-center gap-3 p-3 rounded-xl border border-primary/30 bg-primary/5">
-                    <CreditCard className="w-5 h-5 text-primary" />
-                    <div>
-                      <div className="text-sm font-medium">Credit / Debit Card / UPI</div>
-                      <div className="text-xs text-muted-foreground">Secure payment via Razorpay</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-white/10 bg-card/50">
-                    <CreditCard className="w-5 h-5 text-muted-foreground" />
-                    <div>
-                      <div className="text-sm font-medium">Online Payments</div>
-                      <div className="text-xs text-amber-400">Coming soon</div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {error && (
+                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex gap-2 mb-6 animate-shake">
+                  <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+                </div>
+              )}
+
+              <Button 
+                onClick={handleBooking}
+                disabled={loading}
+                className="w-full h-14 rounded-2xl gradient-blue-purple text-lg font-bold shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-[0.98]"
+              >
+                {loading ? "Initializing..." : "Confirm & Pay Now"}
+              </Button>
+
+              <p className="text-[10px] text-center text-muted-foreground mt-4 leading-relaxed">
+                By confirming, you agree to our <span className="text-primary cursor-pointer hover:underline">Terms of Service</span> and cancellation policy.
+              </p>
             </div>
 
-            <div className="lg:col-span-2">
-              <div className="bg-card border border-card-border rounded-2xl p-5 sticky top-24">
-                <h3 className="font-semibold mb-4">Price Breakdown</h3>
-                <div className="space-y-3 mb-5" data-testid="price-breakdown">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">₹{vehicle.pricePerDay.toLocaleString()} × {days} days</span>
-                    <span>₹{subtotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">GST (18%)</span>
-                    <span>₹{tax.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Service fee</span>
-                    <span>₹{serviceFee.toLocaleString()}</span>
-                  </div>
-                  <div className="border-t border-border pt-3 flex justify-between font-bold">
-                    <span>Total</span>
-                    <span className="text-lg">₹{total.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                {error && (
-                  <div className="flex items-start gap-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-4">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 mb-5">
-                  <Shield className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
-                  <span>Free cancellation up to 24 hours before pickup. Fully insured trip.</span>
-                </div>
-
-                {!user && (
-                  <div className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 mb-4">
-                    You must be signed in to complete booking.
-                  </div>
-                )}
-
-                <Button
-                  className="w-full gradient-blue-purple text-white border-0 shadow-lg shadow-primary/25 py-6 text-base rounded-xl"
-                  onClick={handleConfirm}
-                  disabled={loading || !features.PAYMENTS}
-                  data-testid="button-confirm-booking"
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Processing...
-                    </span>
-                  ) : !features.PAYMENTS ? (
-                    "Payments Coming Soon"
-                  ) : user ? (
-                    "Pay with Razorpay"
-                  ) : (
-                    "Sign In to Book"
-                  )}
-                </Button>
+            <div className="mt-6 p-6 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex gap-4">
+              <Shield className="w-6 h-6 text-emerald-400 shrink-0" />
+              <div>
+                <div className="text-xs font-bold text-emerald-400">Secure Booking</div>
+                <div className="text-[10px] text-muted-foreground mt-1">Free cancellation up to 24 hours before pickup. Instant refund for UPI/Card.</div>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </main>
   );
+}
+
+function cn(...classes: any[]) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function SlidersHorizontal(props: any) {
+  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sliders-horizontal"><path d="m21 4-7 0"/><path d="m10 4-7 0"/><path d="m10 2 0 4"/><path d="m21 12-11 0"/><path d="m7 12-4 0"/><path d="m7 10 0 4"/><path d="m21 20-4 0"/><path d="m13 20-10 0"/><path d="m13 18 0 4"/></svg>;
 }

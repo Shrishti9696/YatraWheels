@@ -1,6 +1,7 @@
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
+import { useEffect } from "react";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BookingProvider } from "@/context/BookingContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -12,6 +13,7 @@ import Booking from "@/pages/Booking";
 import Planner from "@/pages/Planner";
 import Explore from "@/pages/Explore";
 import BookingDetails from "@/pages/BookingDetails";
+import BookingStatus from "@/pages/BookingStatus";
 import Dashboard from "@/pages/Dashboard";
 import Auth from "@/pages/Auth";
 import LeadCapture from "@/pages/LeadCapture";
@@ -26,6 +28,7 @@ import VendorAccountSettings from "@/pages/vendor/VendorAccountSettings";
 
 import DriverDashboard from "@/pages/driver/DriverDashboard";
 import DriverBookings from "@/pages/driver/DriverBookings";
+import DriverOnboarding from "@/pages/driver/DriverOnboarding";
 import ProfilePage from "@/pages/profile/ProfilePage";
 
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -42,6 +45,13 @@ function AppContent() {
   const [location] = useLocation();
   const isPanel = PANEL_PREFIXES.some(p => location === p || location.startsWith(p + "/"));
 
+  useEffect(() => {
+    const ping = setInterval(() => {
+      fetch("/api/health").catch(() => {});
+    }, 25000);
+    return () => clearInterval(ping);
+  }, []);
+
   return (
     <>
       {!isPanel && <Navbar />}
@@ -49,6 +59,7 @@ function AppContent() {
         <Route path="/" component={Home} />
         <Route path="/booking" component={Booking} />
         <Route path="/booking/:id" component={BookingDetails} />
+        <Route path="/bookings/:id" component={BookingStatus} />
         <Route path="/planner" component={Planner} />
         <Route path="/explore" component={Explore} />
         <Route path="/dashboard" component={Dashboard} />
@@ -65,6 +76,7 @@ function AppContent() {
 
         <Route path="/driver" component={DriverDashboard} />
         <Route path="/driver/bookings" component={DriverBookings} />
+        <Route path="/driver/onboarding" component={DriverOnboarding} />
         <Route path="/driver/profile" component={ProfilePage} />
         <Route path="/driver/settings" component={VendorAccountSettings} />
 
@@ -88,9 +100,9 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <BookingProvider>
-              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <WouterRouter base={import.meta.env.BASE_URL?.replace(/\/$/, "") || ""}>
                 <AppContent />
-                <Toaster />
+                <Toaster richColors position="top-right" />
               </WouterRouter>
             </BookingProvider>
           </TooltipProvider>

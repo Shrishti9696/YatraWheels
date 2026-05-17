@@ -26,6 +26,7 @@ export interface IUser extends Document {
   usageLimit: number;
   lastReset: Date;
   isApproved: boolean;
+  status: "active" | "banned";
   createdAt: Date;
 }
 
@@ -66,6 +67,7 @@ const userSchema = new Schema<IUser>(
     phone: { type: String, default: "", trim: true },
     bio: { type: String, default: "", trim: true, maxlength: 300 },
     isApproved: { type: Boolean, default: true },
+    status: { type: String, enum: ["active", "banned"], default: "active" },
   },
   { timestamps: true }
 );

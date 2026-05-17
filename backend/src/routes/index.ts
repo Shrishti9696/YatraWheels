@@ -14,6 +14,7 @@ import aiChatRouter from "./aiChat";
 import configRouter from "./config";
 import mapboxRouter from "./mapbox";
 import uploadRouter from "./upload";
+import messageRouter from "./messages";
 
 const router: IRouter = Router();
 
@@ -33,5 +34,6 @@ router.use("/ai", aiChatRouter);
 router.use("/config", configRouter);
 router.use("/mapbox", mapboxRouter);
 router.use("/upload", uploadRouter);
+router.use("/messages", messageRouter);
 
 export default router;
