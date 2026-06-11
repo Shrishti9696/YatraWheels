@@ -1,6 +1,12 @@
 {
-  "buildCommand": "pnpm install && pnpm --filter @workspace/yatrawheels run build",
-  "outputDirectory": "artifacts/yatrawheels/dist/public",
-  "installCommand": "pnpm install",
-  "framework": null
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
