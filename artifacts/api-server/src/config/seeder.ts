@@ -1,5 +1,8 @@
 import Vehicle from "../models/Vehicle";
+import User from "../models/User";
+import Driver from "../models/Driver";
 import { logger } from "../lib/logger";
+import bcrypt from "bcryptjs";
 
 const DEMO_VEHICLES = [
   {
@@ -229,12 +232,57 @@ const DEMO_VEHICLES = [
   },
 ];
 
+const DEMO_DRIVERS = [
+  { name: "Rajesh Kumar", email: "rajesh.driver@yatrawheels.demo", city: "Delhi", license: "DL-2023-001", rating: 4.9, trips: 312 },
+  { name: "Suresh Verma", email: "suresh.driver@yatrawheels.demo", city: "Delhi", license: "DL-2022-045", rating: 4.8, trips: 287 },
+  { name: "Amit Singh", email: "amit.driver@yatrawheels.demo", city: "Mumbai", license: "MH-2023-088", rating: 4.7, trips: 195 },
+  { name: "Pradeep Nair", email: "pradeep.driver@yatrawheels.demo", city: "Mumbai", license: "MH-2021-211", rating: 4.9, trips: 421 },
+  { name: "Vikram Yadav", email: "vikram.driver@yatrawheels.demo", city: "Jaipur", license: "RJ-2022-067", rating: 4.8, trips: 243 },
+  { name: "Manoj Patel", email: "manoj.driver@yatrawheels.demo", city: "Ahmedabad", license: "GJ-2023-134", rating: 4.6, trips: 158 },
+  { name: "Ravi Sharma", email: "ravi.driver@yatrawheels.demo", city: "Bangalore", license: "KA-2022-092", rating: 4.9, trips: 376 },
+  { name: "Karthik Reddy", email: "karthik.driver@yatrawheels.demo", city: "Hyderabad", license: "TS-2023-055", rating: 4.7, trips: 201 },
+  { name: "Deepak Mishra", email: "deepak.driver@yatrawheels.demo", city: "Goa", license: "GA-2022-029", rating: 4.8, trips: 168 },
+  { name: "Sanjay Tiwari", email: "sanjay.driver@yatrawheels.demo", city: "Kolkata", license: "WB-2023-143", rating: 4.6, trips: 134 },
+];
+
 export async function seedDatabase(): Promise<void> {
-  const count = await Vehicle.countDocuments();
-  if (count > 0) {
-    logger.info({ count }, "Vehicles exist — skipping seed");
-    return;
+  const vehicleCount = await Vehicle.countDocuments();
+  if (vehicleCount === 0) {
+    const inserted = await Vehicle.insertMany(DEMO_VEHICLES);
+    logger.info({ count: inserted.length }, "Demo vehicles seeded successfully");
+  } else {
+    logger.info({ count: vehicleCount }, "Vehicles exist — skipping vehicle seed");
   }
-  const inserted = await Vehicle.insertMany(DEMO_VEHICLES);
-  logger.info({ count: inserted.length }, "Demo vehicles seeded successfully");
+
+  const hashedPw = await bcrypt.hash("Driver@123", 10);
+  let seededCount = 0;
+  for (const d of DEMO_DRIVERS) {
+    const existingUser = await User.findOne({ email: d.email });
+    if (existingUser) continue;
+    const user = await User.create({
+      name: d.name,
+      email: d.email,
+      password: hashedPw,
+      role: "driver",
+      phone: "",
+    });
+    await Driver.create({
+      userId: user._id,
+      licenseNumber: d.license,
+      licenseUrl: "",
+      city: d.city,
+      isAvailable: true,
+      status: "approved",
+      rating: d.rating,
+      reviewCount: Math.floor(d.trips * 0.6),
+      totalTrips: d.trips,
+      totalEarnings: d.trips * 1000,
+    });
+    seededCount++;
+  }
+  if (seededCount > 0) {
+    logger.info({ count: seededCount }, "Demo drivers seeded successfully");
+  } else {
+    logger.info("All demo drivers already exist — skipping");
+  }
 }
