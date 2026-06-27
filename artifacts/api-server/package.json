@@ -1,1 +1,46 @@
-{\n  "name": "@workspace/api-server",\n  "version": "0.0.0",\n  "private": true,\n  "type": "module",\n  "scripts": {\n    "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",\n    "build": "node ./build.mjs",\n    "start": "node --enable-source-maps ./dist/index.mjs",\n    "typecheck": "tsc -p tsconfig.json --noEmit"\n  },\n  "dependencies": {\n    "@workspace/api-zod": "workspace:*",\n    "@workspace/db": "workspace:*",\n    "axios": "^1.15.2",\n    "bcryptjs": "^3.0.3",\n    "cookie-parser": "^1.4.7",\n    "cors": "^2",\n    "drizzle-orm": "catalog:",\n    "express": "^5",\n    "jsonwebtoken": "^9.0.3",\n    "mongoose": "^9.6.1",\n    "openai": "^6.35.0",\n    "pino": "^9",\n    "pino-http": "^10",\n    "razorpay": "^2.9.6"\n  },\n  "devDependencies": {\n    "@types/bcryptjs": "^3.0.0",\n    "@types/cookie-parser": "^1.4.10",\n    "@types/cors": "^2.8.19",\n    "@types/express": "^5.0.6",\n    "@types/jsonwebtoken": "^9.0.10",\n    "@types/node": "catalog:",\n    "esbuild": "^0.27.3",\n    "esbuild-plugin-pino": "^2.3.3",\n    "pino-pretty": "^13",\n    "thread-stream": "3.1.0"\n  }\n}
+{
+  "name": "@workspace/api-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
+    "build": "node ./build.mjs",
+    "start": "node --enable-source-maps ./dist/index.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@workspace/api-zod": "workspace:*",
+    "@workspace/db": "workspace:*",
+    "axios": "^1.15.2",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "catalog:",
+    "express": "^5",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.6.1",
+    "multer": "^2.1.1",
+    "openai": "^6.35.0",
+    "pino": "^9",
+    "pino-http": "^10",
+    "razorpay": "^2.9.6",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^8.2.3",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.1.0",
+    "@types/node": "catalog:",
+    "@types/socket.io": "^3.0.2",
+    "esbuild": "^0.27.7",
+    "esbuild-plugin-pino": "^2.3.3",
+    "pino-pretty": "^13",
+    "thread-stream": "3.1.0"
+  }
+}
