@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchBar } from "@/components/SearchBar";
-import { YatraBotWidget } from "@/components/YatraBotWidget";
 import { getVehicles } from "@/services/api";
 import type { Vehicle } from "@/data/mockData";
 
@@ -98,13 +97,6 @@ function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Right — Live YatraBot Chat */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.3 }}
-            className="hidden lg:block"
-          >
-            <YatraBotWidget />
-          </motion.div>
         </div>
 
         {/* Search bar */}
