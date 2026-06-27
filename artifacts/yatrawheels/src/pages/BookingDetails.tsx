@@ -53,7 +53,18 @@ export default function BookingDetails() {
     }
   }, [vehicle]);
 
-  const pricing = vehicle ? computePricing(vehicle, days, withDriver) : null;
+  if (!vehicle) {
+    return (
+      <main className="pt-24 pb-20 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground text-sm">Redirecting to fleet...</p>
+        </div>
+      </main>
+    );
+  }
+
+  const pricing = computePricing(vehicle, days, withDriver);
 
   useEffect(() => {
     if (withDriver && availableDrivers.length === 0) {
