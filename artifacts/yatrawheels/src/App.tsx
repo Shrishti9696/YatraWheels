@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { YatraBotWidget } from "@/components/YatraBotWidget";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import Home from "@/pages/Home";
 import Booking from "@/pages/Booking";
 import Planner from "@/pages/Planner";
@@ -18,6 +19,10 @@ import LeadCapture from "@/pages/LeadCapture";
 import Pricing from "@/pages/Pricing";
 import NotFound from "@/pages/not-found";
 import UserProfilePage from "@/pages/profile/UserProfilePage";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import VendorDashboard from "@/pages/vendor/VendorDashboard";
@@ -45,6 +50,7 @@ function AppContent() {
 
   return (
     <>
+      <ScrollToTop />
       {!isPanel && <Navbar />}
       <Switch>
         <Route path="/" component={Home} />
@@ -57,6 +63,10 @@ function AppContent() {
         <Route path="/get-plan" component={LeadCapture} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/profile" component={UserProfilePage} />
+        <Route path="/about" component={About} />
+        <Route path="/contact" component={Contact} />
+        <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/terms" component={TermsOfService} />
 
         <Route path="/vendor">
           {() => <ProtectedRoute component={VendorDashboard} role="vendor" />}
