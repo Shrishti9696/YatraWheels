@@ -6,6 +6,7 @@ import { BookingProvider } from "@/context/BookingContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { YatraBotWidget } from "@/components/YatraBotWidget";
 import Home from "@/pages/Home";
 import Booking from "@/pages/Booking";
 import Planner from "@/pages/Planner";
@@ -105,6 +106,7 @@ function AppContent() {
         <Route component={NotFound} />
       </Switch>
       {!isPanel && <Footer />}
+      {!isPanel && location !== "/planner" && <YatraBotWidget />}
     </>
   );
 }
