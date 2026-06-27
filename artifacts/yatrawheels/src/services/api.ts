@@ -81,8 +81,16 @@ export async function getVehicleById(id: string): Promise<Vehicle | null> {
   }
 }
 
-export async function searchRoutes(_from: string, _to: string): Promise<Route[]> {
-  return [];
+export async function searchRoutes(from: string, to: string): Promise<Route[]> {
+  const { mockRoutes } = await import("../data/mockData");
+  const f = from.trim().toLowerCase();
+  const t = to.trim().toLowerCase();
+  if (!f && !t) return mockRoutes;
+  return mockRoutes.filter(r => {
+    const matchFrom = !f || r.from.toLowerCase().includes(f);
+    const matchTo = !t || r.to.toLowerCase().includes(t);
+    return matchFrom && matchTo;
+  });
 }
 
 export async function generateTripPlan(params: {
@@ -194,11 +202,13 @@ export async function getBookings(): Promise<Booking[]> {
 }
 
 export async function getDestinations(): Promise<Destination[]> {
-  return [];
+  const { mockDestinations } = await import("../data/mockData");
+  return mockDestinations;
 }
 
 export async function getPopularRoutes(): Promise<Route[]> {
-  return [];
+  const { mockRoutes } = await import("../data/mockData");
+  return mockRoutes;
 }
 
 export async function getAvailableDrivers(city?: string): Promise<any[]> {
