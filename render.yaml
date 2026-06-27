@@ -5,8 +5,8 @@ services:
     region: singapore
     plan: free
     rootDir: backend
-    buildCommand: npm install && npm run build
-    startCommand: node dist/index.js
+    buildCommand: "corepack enable pnpm && pnpm install && pnpm run build"
+    startCommand: "node --enable-source-maps dist/index.mjs"
     envVars:
       - key: NODE_ENV
         value: production
