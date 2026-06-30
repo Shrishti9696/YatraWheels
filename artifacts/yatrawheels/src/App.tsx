@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BookingProvider } from "@/context/BookingContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { LocationProvider } from "@/context/LocationContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { YatraBotWidget } from "@/components/YatraBotWidget";
@@ -19,6 +20,7 @@ import LeadCapture from "@/pages/LeadCapture";
 import Pricing from "@/pages/Pricing";
 import NotFound from "@/pages/not-found";
 import UserProfilePage from "@/pages/profile/UserProfilePage";
+import Settings from "@/pages/Settings";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
@@ -63,6 +65,7 @@ function AppContent() {
         <Route path="/get-plan" component={LeadCapture} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/profile" component={UserProfilePage} />
+        <Route path="/settings" component={Settings} />
         <Route path="/about" component={About} />
         <Route path="/contact" component={Contact} />
         <Route path="/privacy" component={PrivacyPolicy} />
@@ -124,6 +127,7 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
+      <LocationProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <BookingProvider>
@@ -134,6 +138,7 @@ function App() {
           </BookingProvider>
         </TooltipProvider>
       </QueryClientProvider>
+      </LocationProvider>
     </ThemeProvider>
   );
 }
