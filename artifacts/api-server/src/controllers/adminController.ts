@@ -115,9 +115,10 @@ export async function updateUserRole(req: AuthRequest, res: Response): Promise<v
   }
 
   if (role === "driver") {
-    const existing = await Driver.findOne({ userId: id });
+    const uid = String(id);
+    const existing = await Driver.findOne({ userId: uid });
     if (!existing) {
-      await Driver.create({ userId: id, licenseNumber: "PENDING", status: "pending" });
+      await Driver.create({ userId: uid, licenseNumber: "PENDING", status: "pending" });
     }
   }
 
