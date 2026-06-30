@@ -7,6 +7,7 @@ export interface AuthUser {
   phone?: string;
   bio?: string;
   role: string;
+  plan?: string;
 }
 
 export interface AuthResponse {
