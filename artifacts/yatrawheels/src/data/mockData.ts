@@ -40,6 +40,8 @@ export type BookingStatus = "confirmed" | "upcoming" | "completed";
 export type Booking = {
   id: string;
   vehicleId: string;
+  vehicleName?: string;
+  vehicleImage?: string;
   from: string;
   to: string;
   date: string;
