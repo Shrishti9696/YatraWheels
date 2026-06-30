@@ -99,11 +99,11 @@ export default function Auth() {
   const [, navigate] = useLocation();
 
   const loginForm = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema as any),
     defaultValues: { email: "", password: "" },
   });
   const signupForm = useForm<SignupForm>({
-    resolver: zodResolver(signupSchema),
+    resolver: zodResolver(signupSchema as any),
     defaultValues: { name: "", email: "", password: "", role: "user", licenseNumber: "", city: "" },
   });
 
@@ -118,10 +118,11 @@ export default function Auth() {
         setOtpDigits(Array(6).fill(""));
         setOtpError("");
       } else {
-        setToken(res.token);
-        setStoredUser(res.user);
-        setUser(res.user);
-        navigate(getRoleRedirect(res.user.role));
+        const auth = res as import("@/services/authService").AuthResponse;
+        setToken(auth.token);
+        setStoredUser(auth.user);
+        setUser(auth.user);
+        navigate(getRoleRedirect(auth.user.role));
       }
     } catch (err: any) {
       setLoginError(err.message || "Login failed. Please try again.");
