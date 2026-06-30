@@ -51,7 +51,8 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.45, ease: "easeInOut" }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
+          style={{ backgroundColor: "#0a0b14" }}
         >
           {/* Subtle radial glow */}
           <div className="absolute inset-0 pointer-events-none" style={{
