@@ -3,12 +3,13 @@ import { Link, useLocation } from "wouter";
 import {
   Menu, X, Car, Brain, Compass, LayoutDashboard,
   LogOut, ChevronRight, ChevronDown,
-  Crown, Sun, Moon, User, Settings, Wallet, Truck
+  Crown, Sun, Moon, User, Settings, Wallet, Truck, MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBooking } from "@/context/BookingContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useLocationContext } from "@/context/LocationContext";
 import { YatraWheelsLogoMark } from "@/components/YatraWheelsLogo";
 
 const navLinks = [
@@ -25,6 +26,7 @@ export function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, logout } = useBooking();
   const { theme, toggleTheme } = useTheme();
+  const { location: userLoc } = useLocationContext();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export function Navbar() {
   const dashboardLabel = isVendor ? "Vendor Panel" : isDriver ? "Driver Panel" : isAdmin ? "Admin Panel" : "My Bookings";
   const dashboardIcon = isVendor ? Truck : isDriver ? Car : LayoutDashboard;
   const profileHref = isVendor ? "/vendor/profile" : isDriver ? "/driver/profile" : "/profile";
+  const settingsHref = isVendor ? "/vendor/settings" : isDriver ? "/driver/settings" : "/settings";
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "border-b border-border/60 bg-background/92 backdrop-blur-xl shadow-sm" : "bg-transparent"}`}>
@@ -86,16 +89,7 @@ export function Navbar() {
 
           {/* Desktop right */}
           <div className="hidden lg:flex items-center gap-2">
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all"
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            {/* Get Started — shown only when not logged in, next to theme toggle */}
+            {/* Get Started — shown only when not logged in */}
             {!user && (
               <Link href="/auth" data-testid="link-signup">
                 <Button size="sm" className="gradient-blue-purple text-white border-0 shadow-lg shadow-primary/25 h-8 rounded-lg text-sm">
@@ -133,7 +127,7 @@ export function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 4, scale: 0.97 }}
                       transition={{ duration: 0.15, ease: "easeOut" }}
-                      className="absolute right-0 top-full mt-2 w-60 bg-card border border-card-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden z-50"
+                      className="absolute right-0 top-full mt-2 w-64 bg-card border border-card-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden z-50"
                     >
                       {/* User info */}
                       <div className="px-4 py-3.5 border-b border-border/60">
@@ -144,6 +138,12 @@ export function Navbar() {
                           <div className="min-w-0">
                             <div className="text-sm font-semibold truncate">{user.name}</div>
                             <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+                            {userLoc && (
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <MapPin className="w-3 h-3 text-primary shrink-0" />
+                                <span className="text-[11px] text-primary truncate">{userLoc.city}</span>
+                              </div>
+                            )}
                             {user.plan && (
                               <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 mt-0.5 rounded-md text-[10px] font-semibold capitalize ${user.plan === "premium" ? "text-amber-400 bg-amber-400/10" : user.plan === "pro" ? "text-primary bg-primary/10" : "text-muted-foreground bg-muted/30"}`}>
                                 {user.plan === "premium" && <Crown className="w-2.5 h-2.5" />}
@@ -167,19 +167,17 @@ export function Navbar() {
                             {dashboardLabel}
                           </span>
                         </Link>
+                        <Link href={settingsHref} onClick={() => setUserMenuOpen(false)}>
+                          <span className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors cursor-pointer">
+                            <Settings className="w-4 h-4" /> Settings
+                          </span>
+                        </Link>
                         {!isVendor && !isDriver && !isAdmin && (
-                          <>
-                            <Link href="/profile?tab=appearance" onClick={() => setUserMenuOpen(false)}>
-                              <span className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors cursor-pointer">
-                                <Settings className="w-4 h-4" /> Appearance
-                              </span>
-                            </Link>
-                            <Link href="/pricing" onClick={() => setUserMenuOpen(false)}>
-                              <span className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors cursor-pointer">
-                                <Wallet className="w-4 h-4" /> Plans & Billing
-                              </span>
-                            </Link>
-                          </>
+                          <Link href="/pricing" onClick={() => setUserMenuOpen(false)}>
+                            <span className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors cursor-pointer">
+                              <Wallet className="w-4 h-4" /> Plans & Billing
+                            </span>
+                          </Link>
                         )}
                       </div>
 
@@ -224,12 +222,6 @@ export function Navbar() {
 
           {/* Mobile hamburger */}
           <div className="lg:hidden flex items-center gap-2">
-            <button
-              onClick={toggleTheme}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all"
-            >
-              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
             {!user && (
               <Link href="/auth">
                 <Button size="sm" className="gradient-blue-purple text-white border-0 shadow-md shadow-primary/20 h-8 rounded-lg text-xs px-3">
@@ -281,7 +273,10 @@ export function Navbar() {
                 </Link>
                 {user ? (
                   <div className="space-y-1">
-                    <div className="px-3 py-2 text-xs text-muted-foreground">Signed in as {user.name} · {user.role}</div>
+                    <div className="px-3 py-2 text-xs text-muted-foreground flex items-center gap-1.5">
+                      Signed in as {user.name} · {user.role}
+                      {userLoc && <span className="flex items-center gap-1 text-primary"><MapPin className="w-3 h-3" />{userLoc.city}</span>}
+                    </div>
                     <Link href={profileHref} onClick={() => setMobileOpen(false)}>
                       <span className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 cursor-pointer transition-colors">
                         <User className="w-4 h-4" /> My Profile
@@ -293,6 +288,24 @@ export function Navbar() {
                         {dashboardLabel}
                       </span>
                     </Link>
+                    <Link href={settingsHref} onClick={() => setMobileOpen(false)}>
+                      <span className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 cursor-pointer transition-colors">
+                        <Settings className="w-4 h-4" /> Settings
+                      </span>
+                    </Link>
+                    {/* Theme toggle in mobile menu */}
+                    <button
+                      onClick={() => { toggleTheme(); setMobileOpen(false); }}
+                      className="flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                    >
+                      <span className="flex items-center gap-3">
+                        {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                      </span>
+                      <div className={`w-8 h-4 rounded-full relative transition-colors ${theme === "light" ? "bg-primary" : "bg-border"}`}>
+                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-all ${theme === "light" ? "left-4" : "left-0.5"}`} />
+                      </div>
+                    </button>
                     <button
                       className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-red-400 hover:bg-red-500/8 transition-colors"
                       onClick={() => { logout(); setMobileOpen(false); }}
