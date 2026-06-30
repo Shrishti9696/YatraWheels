@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,6 +10,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { YatraBotWidget } from "@/components/YatraBotWidget";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { SplashScreen } from "@/components/SplashScreen";
 import Home from "@/pages/Home";
 import Booking from "@/pages/Booking";
 import Planner from "@/pages/Planner";
@@ -125,19 +127,29 @@ function AppContent() {
 }
 
 function App() {
+  const [splashDone, setSplashDone] = useState(
+    () => sessionStorage.getItem("yw_splash_shown") === "1"
+  );
+
+  function handleSplashDone() {
+    sessionStorage.setItem("yw_splash_shown", "1");
+    setSplashDone(true);
+  }
+
   return (
     <ThemeProvider>
       <LocationProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <BookingProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <AppContent />
-              <Toaster />
-            </WouterRouter>
-          </BookingProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <BookingProvider>
+              {!splashDone && <SplashScreen onDone={handleSplashDone} />}
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <AppContent />
+                <Toaster />
+              </WouterRouter>
+            </BookingProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
       </LocationProvider>
     </ThemeProvider>
   );
