@@ -107,7 +107,7 @@ export default function BookingDetails() {
       })();
 
       const { booking } = await createBookingAPI({
-        vehicleId: vehicle.id,
+        vehicleId: vehicle!.id,
         pickupLocation,
         dropLocation,
         date,
@@ -124,7 +124,7 @@ export default function BookingDetails() {
         amount: orderData.amount,
         currency: orderData.currency,
         name: "YatraWheels",
-        description: `${vehicle.name} — ${pickupLocation} to ${dropLocation}`,
+        description: `${vehicle!.name} — ${pickupLocation} to ${dropLocation}`,
         order_id: orderData.orderId,
         prefill: { name: user.name, email: user.email },
         theme: { color: "#5b67f5" },
