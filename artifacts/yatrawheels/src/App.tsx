@@ -127,12 +127,9 @@ function AppContent() {
 }
 
 function App() {
-  const [splashDone, setSplashDone] = useState(
-    () => sessionStorage.getItem("yw_splash_shown") === "1"
-  );
+  const [splashDone, setSplashDone] = useState(false);
 
   function handleSplashDone() {
-    sessionStorage.setItem("yw_splash_shown", "1");
     setSplashDone(true);
   }
 
