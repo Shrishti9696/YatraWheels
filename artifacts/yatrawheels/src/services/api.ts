@@ -197,6 +197,7 @@ export async function getBookings(): Promise<Booking[]> {
     date: b.date,
     passengers: b.passengers,
     totalPrice: b.totalPrice,
+    createdAt: b.createdAt || new Date().toISOString(),
     status: b.status,
   }));
 }
