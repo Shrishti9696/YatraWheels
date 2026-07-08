@@ -5,6 +5,7 @@ import User from "../models/User";
 import Driver from "../models/Driver";
 import OTP from "../models/OTP";
 import { sendOTPEmail } from "../services/emailService";
+import { logger } from "../lib/logger";
 
 function generateToken(id: string, email: string, role: string): string {
   const secret = process.env["JWT_SECRET"] ?? process.env["SESSION_SECRET"] ?? "fallback-secret";
@@ -82,13 +83,19 @@ export async function login(req: Request, res: Response): Promise<void> {
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     });
 
-    await sendOTPEmail(user.email, user.name, otp, user.role);
+    const emailSent = await sendOTPEmail(user.email, user.name, otp, user.role);
+
+    if (!emailSent) {
+      logger.warn({ email: user.email }, "OTP email delivery failed — returning code in response");
+    }
 
     res.json({
       requiresOTP: true,
       userId: String(user._id),
       email: user.email,
       role: user.role,
+      emailSent,
+      ...(emailSent ? {} : { otpCode: otp }),
     });
     return;
   }
@@ -168,8 +175,12 @@ export async function resendOTP(req: Request, res: Response): Promise<void> {
     expiresAt: new Date(Date.now() + 10 * 60 * 1000),
   });
 
-  await sendOTPEmail(user.email, user.name, otp, user.role);
-  res.json({ message: "Verification code sent" });
+  const emailSent = await sendOTPEmail(user.email, user.name, otp, user.role);
+  res.json({
+    message: emailSent ? "Verification code sent to your email" : "Email delivery failed",
+    emailSent,
+    ...(emailSent ? {} : { otpCode: otp }),
+  });
 }
 
 export async function getMe(req: Request, res: Response): Promise<void> {
