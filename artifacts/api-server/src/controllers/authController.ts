@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
 import Driver from "../models/Driver";
 import OTP from "../models/OTP";
-import { sendOTPEmail } from "../services/emailService";
+import PasswordReset from "../models/PasswordReset";
+import { sendOTPEmail, sendPasswordResetEmail } from "../services/emailService";
 import { logger } from "../lib/logger";
 
 function generateToken(id: string, email: string, role: string): string {
@@ -181,6 +183,62 @@ export async function resendOTP(req: Request, res: Response): Promise<void> {
     return;
   }
   res.json({ message: "Verification code sent to your email" });
+}
+
+export async function forgotPassword(req: Request, res: Response): Promise<void> {
+  const { email } = req.body;
+  if (!email) { res.status(400).json({ message: "Email is required" }); return; }
+
+  const user = await User.findOne({ email: email.trim().toLowerCase() });
+  if (!user) {
+    res.json({ message: "If that email is registered, you will receive a reset link." });
+    return;
+  }
+
+  await PasswordReset.deleteMany({ userId: String(user._id) });
+
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+  await PasswordReset.create({
+    userId: String(user._id),
+    tokenHash,
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+  });
+
+  const domains = process.env["REPLIT_DOMAINS"] ?? process.env["REPLIT_DEV_DOMAIN"] ?? "localhost";
+  const domain = domains.split(",")[0]!.trim();
+  const resetLink = `https://${domain}/reset-password?token=${rawToken}`;
+
+  const emailSent = await sendPasswordResetEmail(user.email, user.name, resetLink);
+  if (!emailSent) {
+    res.status(503).json({ message: "Could not send reset email. Please try again later." });
+    return;
+  }
+
+  logger.info({ email: user.email }, "Password reset email sent");
+  res.json({ message: "If that email is registered, you will receive a reset link." });
+}
+
+export async function resetPassword(req: Request, res: Response): Promise<void> {
+  const { token, password } = req.body;
+  if (!token || !password) { res.status(400).json({ message: "Token and new password are required" }); return; }
+  if (password.length < 6) { res.status(400).json({ message: "Password must be at least 6 characters" }); return; }
+
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const record = await PasswordReset.findOne({ tokenHash, expiresAt: { $gt: new Date() } });
+
+  if (!record) { res.status(400).json({ message: "Reset link is invalid or has expired" }); return; }
+
+  const user = await User.findById(record.userId).select("+password");
+  if (!user) { res.status(404).json({ message: "User not found" }); return; }
+
+  user.password = await bcrypt.hash(password, 12);
+  await user.save();
+  await PasswordReset.deleteMany({ userId: String(user._id) });
+
+  logger.info({ userId: String(user._id) }, "Password reset successful");
+  res.json({ message: "Password reset successfully. You can now sign in." });
 }
 
 export async function getMe(req: Request, res: Response): Promise<void> {
