@@ -126,6 +126,9 @@ export default function Auth() {
         setUser(auth.user);
         navigate(getRoleRedirect(auth.user.role));
       }
+      if ("requiresOTP" in res && res.requiresOTP && !res.emailSent && res.otpCode) {
+        setOtpDigits(res.otpCode.split(""));
+      }
     } catch (err: any) {
       setLoginError(err.message || "Login failed. Please try again.");
     }
@@ -168,7 +171,7 @@ export default function Auth() {
   async function onResendOTP() {
     if (!otpState || resendCooldown > 0) return;
     try {
-      await resendOTP(otpState.userId);
+      const result = await resendOTP(otpState.userId);
       setOtpDigits(Array(6).fill(""));
       setOtpError("");
       setResendCooldown(60);
@@ -178,6 +181,10 @@ export default function Auth() {
           return c - 1;
         });
       }, 1000);
+      if (!result.emailSent && result.otpCode) {
+        setOtpState(prev => prev ? { ...prev, emailSent: false, otpCode: result.otpCode } : prev);
+        setOtpDigits(result.otpCode.split(""));
+      }
     } catch (err: any) {
       setOtpError(err.message || "Failed to resend code");
     }
@@ -222,10 +229,27 @@ export default function Auth() {
               </div>
               <h2 className="text-xl font-bold mb-1">Verify Your Identity</h2>
               <p className="text-sm text-muted-foreground">
-                A 6-digit code was sent to your email as part of {roleLabel} two-factor authentication.
+                {otpState.emailSent === false
+                  ? "Email delivery failed. Use the code shown below to sign in."
+                  : `A 6-digit code was sent to your email as part of ${roleLabel} two-factor authentication.`}
               </p>
               <p className="text-sm font-medium mt-2 text-primary">{otpState.email}</p>
             </div>
+
+            {/* Email failed — show code on screen */}
+            {otpState.emailSent === false && otpState.otpCode && (
+              <div className="mb-5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                <p className="text-xs text-amber-400 font-medium mb-1.5 flex items-center gap-1.5">
+                  <span>⚠️</span> Email could not be delivered
+                </p>
+                <p className="text-xs text-amber-300/80 mb-2">Use this code to complete sign-in. It expires in 10 minutes.</p>
+                <div className="flex items-center justify-center gap-1.5 font-mono text-2xl font-bold tracking-[0.25em] text-amber-300">
+                  {otpState.otpCode.split("").map((d, i) => (
+                    <span key={i} className="bg-amber-500/20 rounded-md px-2 py-1">{d}</span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-5">
               <OTPInput value={otpDigits} onChange={setOtpDigits} />
