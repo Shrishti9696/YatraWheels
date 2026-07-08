@@ -27,6 +27,7 @@ import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import ResetPassword from "@/pages/ResetPassword";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import VendorDashboard from "@/pages/vendor/VendorDashboard";
@@ -72,6 +73,7 @@ function AppContent() {
         <Route path="/contact" component={Contact} />
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={TermsOfService} />
+        <Route path="/reset-password" component={ResetPassword} />
 
         <Route path="/vendor">
           {() => <ProtectedRoute component={VendorDashboard} role="vendor" />}
