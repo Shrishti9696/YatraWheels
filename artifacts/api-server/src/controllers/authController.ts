@@ -86,7 +86,9 @@ export async function login(req: Request, res: Response): Promise<void> {
     const emailSent = await sendOTPEmail(user.email, user.name, otp, user.role);
 
     if (!emailSent) {
-      logger.warn({ email: user.email }, "OTP email delivery failed — returning code in response");
+      logger.warn({ email: user.email }, "OTP email delivery failed");
+      res.status(503).json({ message: "Verification email could not be sent. Please check your email address and try again." });
+      return;
     }
 
     res.json({
@@ -94,8 +96,6 @@ export async function login(req: Request, res: Response): Promise<void> {
       userId: String(user._id),
       email: user.email,
       role: user.role,
-      emailSent,
-      ...(emailSent ? {} : { otpCode: otp }),
     });
     return;
   }
@@ -176,11 +176,11 @@ export async function resendOTP(req: Request, res: Response): Promise<void> {
   });
 
   const emailSent = await sendOTPEmail(user.email, user.name, otp, user.role);
-  res.json({
-    message: emailSent ? "Verification code sent to your email" : "Email delivery failed",
-    emailSent,
-    ...(emailSent ? {} : { otpCode: otp }),
-  });
+  if (!emailSent) {
+    res.status(503).json({ message: "Verification email could not be sent. Please try again." });
+    return;
+  }
+  res.json({ message: "Verification code sent to your email" });
 }
 
 export async function getMe(req: Request, res: Response): Promise<void> {
