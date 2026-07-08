@@ -176,6 +176,65 @@ export async function sendBookingConfirmationEmail(data: BookingConfirmationData
   }
 }
 
+export async function sendPasswordResetEmail(email: string, name: string, resetLink: string): Promise<boolean> {
+  const subject = "Reset your YatraWheels password";
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#1e293b;border-radius:16px;overflow:hidden;max-width:600px;width:100%;">
+        <tr><td style="background:linear-gradient(135deg,#6d28d9,#7c3aed);padding:32px 40px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;color:#fff;">🚗 YatraWheels</div>
+          <div style="color:#c4b5fd;font-size:14px;margin-top:6px;">Password Reset</div>
+        </td></tr>
+        <tr><td style="padding:40px;">
+          <p style="color:#94a3b8;font-size:15px;margin:0 0 16px;">Hi <strong style="color:#e2e8f0;">${name}</strong>,</p>
+          <p style="color:#94a3b8;font-size:15px;margin:0 0 28px;">We received a request to reset your password. Click the button below to set a new password. This link expires in <strong style="color:#e2e8f0;">1 hour</strong>.</p>
+          <div style="text-align:center;margin-bottom:32px;">
+            <a href="${resetLink}" style="display:inline-block;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;text-decoration:none;padding:14px 36px;border-radius:12px;font-weight:700;font-size:16px;letter-spacing:0.3px;">Reset My Password</a>
+          </div>
+          <p style="color:#64748b;font-size:13px;margin:0 0 8px;">Or copy this link into your browser:</p>
+          <p style="color:#a78bfa;font-size:12px;word-break:break-all;margin:0 0 24px;">${resetLink}</p>
+          <p style="color:#ef4444;font-size:13px;margin:0;">If you did not request a password reset, ignore this email — your password will remain unchanged.</p>
+        </td></tr>
+        <tr><td style="background:#0f172a;padding:20px 40px;text-align:center;border-top:1px solid #1e293b;">
+          <p style="color:#475569;font-size:12px;margin:0;">© 2025 YatraWheels. All rights reserved.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const resend = getResend();
+  if (resend) {
+    try {
+      const { error } = await resend.emails.send({ from: `${FROM_NAME} <onboarding@resend.dev>`, to: email, subject, html });
+      if (error) throw new Error(error.message);
+      logger.info({ email }, "Password reset email sent via Resend");
+      return true;
+    } catch (err: any) {
+      logger.error({ err: err.message }, "Resend failed for password reset, trying Gmail");
+    }
+  }
+
+  const transporter = createGmailTransporter();
+  if (transporter) {
+    try {
+      await transporter.sendMail({ from: `"${FROM_NAME}" <${GMAIL_USER}>`, to: email, subject, html });
+      logger.info({ email }, "Password reset email sent via Gmail");
+      return true;
+    } catch (err: any) {
+      logger.error({ err: err.message }, "Gmail failed for password reset");
+    }
+  }
+
+  logger.warn({ email }, "All email providers failed for password reset");
+  return false;
+}
+
 export async function sendOTPEmail(email: string, name: string, otp: string, role: string): Promise<boolean> {
   const roleLabel = role === "vendor" ? "Vendor" : "Driver";
   const subject = `${otp} — YatraWheels ${roleLabel} verification code`;
