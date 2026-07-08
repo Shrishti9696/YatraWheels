@@ -99,6 +99,26 @@ export async function verifyOTP(data: {
   return json;
 }
 
+export async function forgotPassword(email: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to send reset email");
+}
+
+export async function resetPassword(token: string, password: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, password }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to reset password");
+}
+
 export async function resendOTP(userId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/auth/resend-otp`, {
     method: "POST",
