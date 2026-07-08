@@ -1,6 +1,6 @@
 import { useState, useRef, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, Car, Truck, Users, ShieldCheck, RefreshCw } from "lucide-react";
+import { MapPin, Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, Car, Truck, Users, ShieldCheck, RefreshCw, KeyRound, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { loginUser, registerUser, setToken, setStoredUser, verifyOTP, resendOTP } from "@/services/authService";
+import { loginUser, registerUser, setToken, setStoredUser, verifyOTP, resendOTP, forgotPassword } from "@/services/authService";
 import type { OTPRequired } from "@/services/authService";
 import { useBooking } from "@/context/BookingContext";
 
@@ -86,6 +86,8 @@ function OTPInput({ value, onChange }: { value: string[]; onChange: (v: string[]
   );
 }
 
+type ForgotStep = "email" | "sent";
+
 export default function Auth() {
   const [showPass, setShowPass] = useState(false);
   const [loginError, setLoginError] = useState("");
@@ -96,6 +98,10 @@ export default function Auth() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [forgotStep, setForgotStep] = useState<ForgotStep | null>(null);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState("");
   const termsId = useId();
   const { setUser } = useBooking();
   const [, navigate] = useLocation();
@@ -165,6 +171,20 @@ export default function Auth() {
     }
   }
 
+  async function onForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setForgotError("");
+    setForgotLoading(true);
+    try {
+      await forgotPassword(forgotEmail);
+      setForgotStep("sent");
+    } catch (err: any) {
+      setForgotError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setForgotLoading(false);
+    }
+  }
+
   async function onResendOTP() {
     if (!otpState || resendCooldown > 0) return;
     try {
@@ -181,6 +201,95 @@ export default function Auth() {
     } catch (err: any) {
       setOtpError(err.message || "Failed to resend code");
     }
+  }
+
+  if (forgotStep) {
+    return (
+      <main className="min-h-screen flex items-center justify-center pt-16 pb-10 px-4 relative overflow-hidden">
+        <button
+          onClick={() => { setForgotStep(null); setForgotEmail(""); setForgotError(""); }}
+          className="absolute top-5 left-5 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group z-10"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          Back
+        </button>
+
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 left-1/3 w-96 h-96 rounded-full bg-primary/8 blur-3xl" />
+          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-purple-500/8 blur-3xl" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="relative w-full max-w-md"
+        >
+          <Link href="/" className="flex items-center justify-center gap-2.5 mb-8">
+            <div className="w-9 h-9 rounded-xl gradient-blue-purple flex items-center justify-center shadow-lg shadow-primary/30">
+              <MapPin className="w-4 h-4 text-white" strokeWidth={2.5} />
+            </div>
+            <span className="text-xl font-bold">Yatra<span className="gradient-text">Wheels</span></span>
+          </Link>
+
+          <div className="bg-card border border-card-border rounded-3xl p-8 shadow-2xl">
+            {forgotStep === "sent" ? (
+              <div className="flex flex-col items-center text-center gap-5">
+                <div className="w-16 h-16 rounded-2xl bg-green-500/15 border border-green-500/20 flex items-center justify-center">
+                  <CheckCircle2 className="w-8 h-8 text-green-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold mb-2">Check Your Email</h2>
+                  <p className="text-sm text-muted-foreground mb-1">We've sent a password reset link to:</p>
+                  <p className="text-sm font-semibold text-primary">{forgotEmail}</p>
+                  <p className="text-sm text-muted-foreground mt-3">Click the link in the email to set a new password. It expires in 1 hour.</p>
+                </div>
+                <p className="text-xs text-muted-foreground">Didn't receive it? Check spam or{" "}
+                  <button className="text-primary hover:underline" onClick={() => setForgotStep("email")}>try again</button>
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col items-center text-center mb-7">
+                  <div className="w-14 h-14 rounded-2xl gradient-blue-purple flex items-center justify-center shadow-lg shadow-primary/25 mb-4">
+                    <KeyRound className="w-7 h-7 text-white" />
+                  </div>
+                  <h2 className="text-xl font-bold mb-1">Forgot Password?</h2>
+                  <p className="text-sm text-muted-foreground">Enter your registered email and we'll send you a reset link.</p>
+                </div>
+
+                <form onSubmit={onForgotPassword} className="space-y-4">
+                  {forgotError && (
+                    <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">{forgotError}</div>
+                  )}
+                  <div>
+                    <label className="text-sm font-medium mb-1.5 block">Email Address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <input
+                        type="email"
+                        required
+                        value={forgotEmail}
+                        onChange={e => setForgotEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-white/10 bg-muted/50 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="w-full gradient-blue-purple text-white border-0 shadow-lg shadow-primary/25 py-5 rounded-xl"
+                  >
+                    {forgotLoading ? "Sending..." : <><span>Send Reset Link</span><ArrowRight className="w-4 h-4 ml-2" /></>}
+                  </Button>
+                </form>
+              </>
+            )}
+          </div>
+        </motion.div>
+      </main>
+    );
   }
 
   if (otpState) {
@@ -342,7 +451,9 @@ export default function Auth() {
                     </FormItem>
                   )} />
                   <div className="flex justify-end">
-                    <a href="#" className="text-xs text-primary hover:underline">Forgot password?</a>
+                    <button type="button" onClick={() => { setForgotStep("email"); setLoginError(""); }} className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </button>
                   </div>
                   <Button type="submit" className="w-full gradient-blue-purple text-white border-0 shadow-lg shadow-primary/25 py-5 rounded-xl" disabled={loginForm.formState.isSubmitting}>
                     {loginForm.formState.isSubmitting ? "Signing in..." : <><span>Sign In</span><ArrowRight className="w-4 h-4 ml-2" /></>}
