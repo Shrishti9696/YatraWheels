@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, Car, Truck, Users, ShieldCheck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -95,6 +95,8 @@ export default function Auth() {
   const [otpError, setOtpError] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const termsId = useId();
   const { setUser } = useBooking();
   const [, navigate] = useLocation();
 
@@ -447,16 +449,61 @@ export default function Auth() {
                     </>
                   )}
 
-                  <Button type="submit" className="w-full gradient-blue-purple text-white border-0 shadow-lg shadow-primary/25 py-5 rounded-xl mt-2" disabled={signupForm.formState.isSubmitting}>
+                  {/* Terms & Privacy checkbox */}
+                  <div className="flex items-start gap-3 pt-1">
+                    <div className="relative mt-0.5 shrink-0">
+                      <input
+                        id={termsId}
+                        type="checkbox"
+                        checked={termsAccepted}
+                        onChange={e => setTermsAccepted(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <label
+                        htmlFor={termsId}
+                        className={`flex items-center justify-center w-4.5 h-4.5 rounded-md border-2 cursor-pointer transition-all select-none
+                          ${termsAccepted
+                            ? "bg-primary border-primary"
+                            : "bg-muted/40 border-border hover:border-primary/60"
+                          }`}
+                        style={{ width: 18, height: 18 }}
+                      >
+                        {termsAccepted && (
+                          <svg viewBox="0 0 12 10" fill="none" className="w-2.5 h-2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="1,5 4,8.5 11,1" />
+                          </svg>
+                        )}
+                      </label>
+                    </div>
+                    <label htmlFor={termsId} className="text-xs text-muted-foreground leading-relaxed cursor-pointer select-none">
+                      I have read and agree to the{" "}
+                      <Link href="/terms" onClick={e => e.stopPropagation()}>
+                        <span className="text-primary hover:underline font-medium">Terms of Service</span>
+                      </Link>{" "}
+                      and{" "}
+                      <Link href="/privacy" onClick={e => e.stopPropagation()}>
+                        <span className="text-primary hover:underline font-medium">Privacy Policy</span>
+                      </Link>
+                    </label>
+                  </div>
+
+                  {!termsAccepted && signupForm.formState.isSubmitted && (
+                    <p className="text-xs text-red-400">You must accept the terms to create an account.</p>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className={`w-full text-white border-0 shadow-lg py-5 rounded-xl mt-1 transition-all ${
+                      termsAccepted
+                        ? "gradient-blue-purple shadow-primary/25"
+                        : "bg-muted/50 shadow-none cursor-not-allowed opacity-60"
+                    }`}
+                    disabled={signupForm.formState.isSubmitting || !termsAccepted}
+                  >
                     {signupForm.formState.isSubmitting ? "Creating account..." : <><span>Create Account</span><ArrowRight className="w-4 h-4 ml-2" /></>}
                   </Button>
                 </form>
               </Form>
-              <p className="text-xs text-muted-foreground text-center mt-4">
-                By signing up, you agree to our{" "}
-                <a href="#" className="text-primary hover:underline">Terms</a> and{" "}
-                <a href="#" className="text-primary hover:underline">Privacy Policy</a>.
-              </p>
             </TabsContent>
           </Tabs>
         </div>
