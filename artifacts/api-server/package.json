@@ -28,6 +28,7 @@
     "pino": "^9",
     "pino-http": "^10",
     "razorpay": "^2.9.6",
+    "resend": "^6.17.1",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
