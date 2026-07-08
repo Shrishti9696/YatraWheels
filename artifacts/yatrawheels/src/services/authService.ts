@@ -20,8 +20,6 @@ export interface OTPRequired {
   userId: string;
   email: string;
   role: string;
-  emailSent?: boolean;
-  otpCode?: string;
 }
 
 export function getToken(): string | null {
@@ -101,7 +99,7 @@ export async function verifyOTP(data: {
   return json;
 }
 
-export async function resendOTP(userId: string): Promise<{ emailSent: boolean; otpCode?: string }> {
+export async function resendOTP(userId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/auth/resend-otp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -109,7 +107,6 @@ export async function resendOTP(userId: string): Promise<{ emailSent: boolean; o
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json.message || "Failed to resend code");
-  return { emailSent: json.emailSent ?? true, otpCode: json.otpCode };
 }
 
 export async function fetchMe(): Promise<AuthUser> {
