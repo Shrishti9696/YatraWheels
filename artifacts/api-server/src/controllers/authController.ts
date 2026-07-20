@@ -10,7 +10,8 @@ import { sendOTPEmail, sendPasswordResetEmail } from "../services/emailService";
 import { logger } from "../lib/logger";
 
 function generateToken(id: string, email: string, role: string): string {
-  const secret = process.env["JWT_SECRET"] ?? process.env["SESSION_SECRET"] ?? "fallback-secret";
+  const secret = process.env["JWT_SECRET"] ?? process.env["SESSION_SECRET"];
+  if (!secret) throw new Error("JWT secret is not configured. Set SESSION_SECRET env var.");
   return jwt.sign({ id, email, role }, secret, { expiresIn: "7d" });
 }
 
