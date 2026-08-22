@@ -6,6 +6,10 @@
   "regions": ["iad1"],
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://yatrawheels.onrender.com/api/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
