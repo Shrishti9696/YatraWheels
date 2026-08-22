@@ -1,0 +1,272 @@
+Redesign my React web app "YatraWheels" into a premium, production-level AI SaaS product with FAANG-level UI/UX.
+
+Goal:
+Create a visually stunning, highly responsive, and intuitive interface that feels like a real startup product built by top companies like Apple, Airbnb, and Stripe.
+
+---
+
+1. GLOBAL DESIGN SYSTEM
+
+* Typography: Inter or Poppins
+* Theme: Dark with elegant gradients (blue/purple accents)
+* Border radius: 16px–24px
+* Use glassmorphism (blur backgrounds, transparent cards)
+* Soft shadows and depth
+* Perfect spacing, padding, and alignment
+* Consistent color palette
+
+---
+
+2. NAVBAR
+
+* Sticky navbar with blur on scroll
+* Left: Logo (YatraWheels)
+* Right:
+
+  * Home
+  * Fleet
+  * AI Planner (highlighted CTA)
+  * Pricing
+  * Login / Signup (primary button)
+* Mobile responsive hamburger menu
+
+---
+
+3. HERO SECTION (HIGH IMPACT)
+
+* Full-width background image (travel/road trip)
+* Dark gradient overlay for readability
+* Left side:
+
+  * Headline: “Plan smarter journeys with AI-powered travel & premium rides”
+  * Subheadline
+  * CTA buttons:
+
+    * Primary: “Plan with AI”
+    * Secondary: “Book a Ride”
+* Right side:
+
+  * Visual (map, travel image, or illustration)
+* Add glassmorphism search bar:
+
+  * Pickup location
+  * Destination
+  * Date
+  * Passengers
+* Add smooth focus and hover animations
+
+---
+
+4. TRUST / SOCIAL PROOF SECTION
+
+* Show:
+
+  * ⭐ 4.9 Rating
+  * 🚗 50K+ Travelers
+  * 🛡 Verified Drivers
+  * ⚡ Instant Booking
+* Display as clean horizontal cards or badges
+
+---
+
+5. USE CASES SECTION (UPGRADED)
+
+* Title: “Built for every journey”
+* Cards:
+
+  * Road Trips
+  * Destination Weddings
+  * Group Travel
+* Add:
+
+  * Icons
+  * Short descriptions
+  * Hover animations (lift + glow)
+  * Gradient backgrounds
+
+---
+
+6. FLEET SECTION (PREMIUM CARDS)
+
+* Add real vehicle images
+* Each card includes:
+
+  * Title
+  * Price
+  * Passenger capacity
+* Design:
+
+  * Glassmorphism
+  * Rounded corners
+  * Hover animation (scale + shadow)
+* Use responsive grid layout
+
+---
+
+7. AI PLANNER SECTION (CORE FEATURE)
+
+Create a premium split layout:
+
+Desktop:
+
+* Left: Input / Chat
+* Right: AI Output
+
+Mobile:
+
+* Stack layout (Input → Output)
+
+LEFT PANEL:
+
+* Chat interface (ChatGPT-style)
+* Scrollable messages
+* Sticky input box at bottom
+* Placeholder: “Where do you want to travel?”
+* Above chat:
+
+  * Destination input
+  * Budget
+  * Dates
+  * Travelers
+
+RIGHT PANEL:
+
+* Structured AI output UI:
+
+  * Destination header with image
+  * Day-wise itinerary cards
+  * Budget breakdown
+  * Recommendations section
+* CTA:
+
+  * “Download PDF”
+  * “Book Now”
+
+UX Enhancements:
+
+* Typing animation (“AI is thinking…”)
+* Regenerate plan button
+* Modify plan input
+* Suggested prompts:
+
+  * “Make it cheaper”
+  * “Add adventure activities”
+
+---
+
+8. POPULAR ROUTES SECTION
+
+* Improve with:
+
+  * Image cards
+  * Route details
+  * Pricing
+  * Hover zoom effect
+* Add “Book Now” CTA
+
+---
+
+9. FINAL CTA SECTION
+
+* Strong conversion section:
+
+  * “Ready to plan your next journey?”
+* Buttons:
+
+  * Start Planning
+  * Explore Fleet
+* Background:
+
+  * Gradient + blur + subtle animation
+
+---
+
+10. FOOTER
+
+* Include:
+
+  * Navigation links
+  * Contact info
+  * Social media
+  * Copyright
+
+---
+
+11. MICRO-INTERACTIONS
+
+* Button hover glow
+* Card hover lift
+* Smooth scrolling
+* Fade-in animations
+* Skeleton loaders while loading
+
+---
+
+12. RESPONSIVENESS (CRITICAL)
+
+* Mobile-first design
+* Ensure:
+
+  * No broken layouts
+  * No hidden images
+  * No overflow issues
+* Use:
+
+  * Flexible grids
+  * Proper image scaling (object-fit: cover)
+* Test on:
+
+  * Mobile
+  * Tablet
+  * Desktop
+
+---
+
+13. PERFORMANCE
+
+* Lazy load images
+* Optimize assets
+* Ensure fast load times
+
+---
+
+14. ACCESSIBILITY
+
+* Proper contrast ratios
+* Semantic HTML
+* Keyboard navigation support
+
+---
+
+15. CODE OUTPUT
+
+* Clean React components
+* Reusable UI components
+* Modular structure
+* Production-ready code
+
+---
+
+FINAL GOAL:
+
+The UI should feel like a premium AI-powered SaaS product where users say:
+“This looks like a real startup product built by top engineers.”
+
+The design should be:
+
+* Elegant
+* Intuitive
+* Visually impressive
+* Highly usable
+
+Avoid:
+
+* Overdesign
+* Too many colors
+* Cluttered UI
+
+Focus on:
+
+* Clarity
+* Simplicity
+* Premium experience

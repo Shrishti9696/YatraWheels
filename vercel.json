@@ -1,7 +1,7 @@
 {
-  "buildCommand": "pnpm install && pnpm run build",
-  "installCommand": "pnpm install",
-  "outputDirectory": "frontend/dist",
+  "buildCommand": "pnpm --filter @workspace/yatrawheels run build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": "artifacts/yatrawheels/dist/public",
   "framework": "vite",
   "regions": ["iad1"],
   "rewrites": [

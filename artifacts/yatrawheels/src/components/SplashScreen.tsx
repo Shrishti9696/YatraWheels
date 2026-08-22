@@ -61,9 +61,9 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
 
           {/* Logo + Name */}
           <motion.div
-            initial={{ opacity: 0, y: 18, scale: 0.92 }}
+            initial={{ opacity: 1, y: 8, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col items-center gap-5 relative"
           >
             {/* Logo mark with glow ring */}

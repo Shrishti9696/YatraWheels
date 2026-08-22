@@ -1,0 +1,193 @@
+Build a production-level FRONTEND ONLY web application for a modern AI-powered vehicle booking and travel planning platform called "YatraWheels".
+
+IMPORTANT RULES:
+
+Do NOT include any backend implementation.
+Use mock data or simulated API responses.
+Structure the code so real backend APIs can be easily integrated later.
+Do NOT mention DeepSeek AI or any AI tool anywhere in the code, comments, UI, or metadata.
+The application must look like it was built by a professional engineer from a top tech company.
+
+PROJECT VISION:
+
+YatraWheels is a smart platform focused on:
+
+Vehicle booking for trips (cars, vans, buses)
+Group transportation for destination weddings and events
+AI-powered trip planning assistance
+
+This is NOT a wedding planning platform. Instead:
+
+Users can book transport to travel to wedding destinations
+Users can arrange group transport for guests
+Users can plan trips and get vehicle suggestions using AI
+
+The platform should feel like a combination of:
+
+Uber (vehicle booking)
+MakeMyTrip (travel experience)
+AI assistant (smart planning)
+
+TECH STACK REQUIREMENTS:
+
+React.js (functional components + hooks)
+Tailwind CSS
+React Router
+Context API for state management
+Clean, scalable component-based architecture
+
+UI/UX REQUIREMENTS:
+
+Premium, modern UI (glassmorphism + gradients + soft shadows)
+Fully responsive design (mobile + desktop)
+Smooth animations and transitions
+Clean typography and spacing
+Color theme:
+Travel blue + gradient purple + subtle gold accents (for premium feel)
+Use cards, modals, tabs, and dashboards
+Include loading skeletons and interactive UI states
+
+CORE FEATURES & PAGES:
+
+Landing Page
+Hero section:
+"Book vehicles for trips & destination events"
+Search bar:
+Pickup location, destination, date, number of passengers
+CTA buttons:
+Book a Ride
+Plan a Trip
+Sections:
+Popular routes
+Vehicle categories (cars, vans, buses)
+Use cases (Trips, Weddings, Group Travel)
+Navbar + Footer
+Vehicle Booking Page (Main Feature)
+Inputs:
+Pickup location
+Drop location
+Date
+Number of passengers
+Show available vehicles:
+Cars
+Vans
+Buses
+Filters:
+Price
+Capacity
+Type (luxury, standard)
+Each vehicle card includes:
+Image
+Price estimate
+Capacity
+Features
+Booking button (frontend only)
+AI Trip Planner Page
+Inputs:
+Destination
+Budget
+Number of days
+Number of people
+Button: "Generate Trip Plan"
+Output:
+Suggested itinerary (mock data)
+Suggested vehicle type (AI-like logic)
+Show loading animation while generating
+Explore Page
+Browse destinations
+Popular travel routes
+Wedding/event travel routes (e.g., city to resort)
+Filters and search
+Booking Details Page
+Selected vehicle details
+Trip summary
+Price breakdown (mock)
+Confirm booking UI (frontend only)
+Dashboard Page
+Saved bookings
+Trip history (mock)
+Saved routes
+User profile (frontend only)
+Authentication Pages
+Login / Signup UI only
+
+COMPONENT STRUCTURE:
+
+/components
+Navbar
+Footer
+VehicleCard
+SearchBar
+BookingForm
+Loader / Skeleton
+Modal
+Button
+/pages
+Home
+Booking
+Planner
+Explore
+BookingDetails
+Dashboard
+Auth
+/data
+mockData.js
+/services
+api.js
+/utils
+helpers.js
+
+API INTEGRATION PREPARATION:
+
+Create mock API functions:
+
+getVehicles()
+searchRoutes()
+generateTripPlan()
+getBookings()
+
+Use async/await with fake delays to simulate real APIs.
+
+AI INTEGRATION (FRONTEND SIMULATION):
+
+Show AI-generated itinerary using mock structured data
+Suggest best vehicle type based on:
+Number of passengers
+Budget
+Display AI suggestions in a clean UI panel
+
+ADVANCED FEATURES:
+
+Lazy loading routes
+Error handling UI
+Empty states
+Reusable UI components
+Clean and scalable architecture
+Use icons (Lucide / Heroicons)
+
+DESIGN INSPIRATION:
+
+Uber (vehicle booking flow)
+MakeMyTrip (travel UI)
+Google Travel (clean experience)
+Modern SaaS dashboards
+
+FINAL OUTPUT REQUIREMENTS:
+
+Provide complete working frontend code
+No backend code
+No broken UI
+No AI tool references
+Professional naming conventions
+Scalable structure for future backend integration
+
+GOAL:
+
+This project should:
+
+Represent a real-world startup idea
+Be portfolio-ready for top tech companies
+Be extendable into a full-stack AI-powered platform
+Demonstrate strong frontend engineering skills
+
+Now generate the complete frontend codebase.

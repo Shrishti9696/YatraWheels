@@ -1,0 +1,20 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "KK_3RON7haMUzNgTJ35Ym"
+uri = "file://artifacts/yatrawheels/public/use-case-road-trip.png"
+type = "image"
+title = "india road trip mountains"
+
+[[generated]]
+id = "opBmCgd34UEfaKrn39LFT"
+uri = "file://artifacts/yatrawheels/public/use-case-wedding.png"
+type = "image"
+title = "india destination wedding cars"
+
+[[generated]]
+id = "I8ONVqRcMKqqCVWOd3V-b"
+uri = "file://artifacts/yatrawheels/public/use-case-group-travel.png"
+type = "image"
+title = "india corporate group travel"

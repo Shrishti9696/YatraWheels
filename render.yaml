@@ -4,9 +4,8 @@ services:
     env: node
     region: singapore
     plan: free
-    rootDir: backend
-    buildCommand: "corepack enable pnpm && pnpm install && pnpm run build"
-    startCommand: "node --enable-source-maps dist/index.mjs"
+    buildCommand: "corepack enable pnpm && pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build"
+    startCommand: "node --enable-source-maps artifacts/api-server/dist/index.mjs"
     envVars:
       - key: NODE_ENV
         value: production
@@ -23,4 +22,10 @@ services:
       - key: RAZORPAY_KEY_SECRET
         sync: false
       - key: FRONTEND_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: ZAPIER_WEBHOOK_URL
         sync: false

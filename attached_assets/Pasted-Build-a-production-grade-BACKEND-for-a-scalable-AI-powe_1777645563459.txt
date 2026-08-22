@@ -1,0 +1,369 @@
+Build a production-grade BACKEND for a scalable AI-powered vehicle booking and travel platform called "YatraWheels".
+
+IMPORTANT RULES:
+
+* Backend only (no frontend code).
+* Do NOT mention any AI tool in code/comments.
+* Write clean, modular, maintainable, production-level code.
+* Follow industry best practices used in real companies.
+* Avoid overengineering — focus on clarity, scalability, and correctness.
+* Code should be ready for real-world deployment.
+
+---
+
+TECH STACK:
+
+* Node.js + Express.js
+* MongoDB (Mongoose ODM)
+* JWT Authentication
+* REST API architecture
+* dotenv for environment variables
+
+---
+
+ARCHITECTURE:
+
+Follow clean MVC + service-based architecture:
+
+* /config
+
+  * db.js
+
+* /controllers
+
+  * authController.js
+  * vehicleController.js
+  * bookingController.js
+  * tripController.js
+  * paymentController.js
+
+* /models
+
+  * User.js
+  * Vehicle.js
+  * Booking.js
+  * Trip.js
+  * Payment.js
+
+* /routes
+
+  * authRoutes.js
+  * vehicleRoutes.js
+  * bookingRoutes.js
+  * tripRoutes.js
+  * paymentRoutes.js
+
+* /middleware
+
+  * authMiddleware.js
+  * errorMiddleware.js
+
+* /services
+
+  * aiService.js
+  * pricingService.js
+  * paymentService.js
+
+* /utils
+
+  * validators.js
+  * helpers.js
+
+* server.js
+
+---
+
+PROJECT VISION:
+
+YatraWheels is a platform where users can:
+
+* Book vehicles (cars, vans, buses) for trips
+* Arrange group transport for destination weddings/events
+* Get AI-generated trip plans
+* Make secure payments for bookings
+* Manage bookings and travel routes
+
+This is a vehicle booking + travel platform (NOT a wedding planner).
+
+---
+
+DATABASE DESIGN (PRODUCTION LEVEL):
+
+Use MongoDB with optimized schemas, validation, and indexing.
+
+1. USER MODEL:
+
+* name (string, required)
+* email (string, unique, indexed)
+* password (hashed)
+* role (user/admin)
+* createdAt
+
+Validation:
+
+* Email format validation
+* Required fields
+
+---
+
+2. VEHICLE MODEL:
+
+* type (car | van | bus)
+* capacity (number)
+* pricePerKm (number)
+* location (string)
+* features (array of strings)
+* isAvailable (boolean)
+* createdAt
+
+Indexes:
+
+* location
+* type
+* pricePerKm
+
+---
+
+3. BOOKING MODEL:
+
+* userId (ObjectId, ref: User, indexed)
+* vehicleId (ObjectId, ref: Vehicle, indexed)
+* pickupLocation
+* dropLocation
+* date (indexed)
+* passengers
+* totalPrice
+* status (pending | confirmed | cancelled)
+* createdAt
+
+CRITICAL BUSINESS LOGIC:
+
+* Prevent double booking (same vehicle, same date)
+* Validate passengers <= vehicle capacity
+
+---
+
+4. TRIP MODEL:
+
+* userId (ref: User)
+* destination
+* days
+* budget
+* suggestedVehicle
+* itinerary (array of objects)
+* createdAt
+
+---
+
+5. PAYMENT MODEL:
+
+* userId (ref: User)
+* bookingId (ref: Booking)
+* amount
+* currency
+* paymentProvider (stripe/razorpay)
+* paymentStatus (pending | success | failed)
+* transactionId
+* createdAt
+
+---
+
+RELATIONSHIPS:
+
+* Booking → User (populate)
+* Booking → Vehicle (populate)
+* Trip → User (populate)
+* Payment → Booking (populate)
+
+---
+
+PERFORMANCE OPTIMIZATION:
+
+* Use indexes for search queries
+* Use pagination (limit, skip)
+* Use .lean() for read-heavy APIs
+
+---
+
+CORE FEATURES:
+
+1. AUTHENTICATION:
+
+* Register user
+* Login user
+* JWT-based authentication
+* Password hashing (bcrypt)
+
+---
+
+2. VEHICLE APIs:
+
+* GET /vehicles (filters: type, capacity, price, location)
+* GET /vehicles/:id
+* POST /vehicles (admin only)
+* PUT /vehicles/:id
+* DELETE /vehicles/:id
+
+---
+
+3. BOOKING SYSTEM:
+
+* POST /bookings
+* GET /bookings/user/:id
+* GET /bookings/:id
+* PUT /bookings/:id (update status)
+* DELETE /bookings/:id
+
+LOGIC:
+
+* Calculate price using pricingService
+* Validate passenger capacity
+* Check availability before booking
+* Booking starts as "pending"
+
+---
+
+4. TRIP / AI PLANNER:
+
+* POST /trips/generate
+* GET /trips/user/:id
+
+---
+
+AI SERVICE:
+
+Create aiService.js:
+
+Function:
+
+* generateTripPlan(data)
+
+Behavior:
+
+* Generate itinerary based on number of days
+* Suggest vehicle based on passengers
+* Return structured JSON
+
+Keep modular so real AI APIs can be integrated later.
+
+---
+
+5. PRICING SERVICE:
+
+Create pricingService.js:
+
+* calculateDistance(mock logic)
+* calculatePrice(distance, vehicle)
+
+---
+
+6. PAYMENT SYSTEM:
+
+PAYMENT FLOW:
+
+1. User creates booking → status = "pending"
+2. Backend creates payment order
+3. User completes payment
+4. Backend verifies payment
+5. Booking status → "confirmed"
+
+---
+
+PAYMENT APIs:
+
+* POST /payments/create-order
+* POST /payments/verify
+* GET /payments/:id
+
+---
+
+PAYMENT SERVICE:
+
+Create paymentService.js:
+
+* createPaymentOrder()
+* verifyPayment()
+
+---
+
+IMPORTANT LOGIC:
+
+* Booking is confirmed ONLY after payment success
+* Prevent duplicate payments
+* Handle failed payments properly
+
+---
+
+SECURITY:
+
+* JWT middleware for protected routes
+* Password hashing (bcrypt)
+* Input validation
+* Environment variables for secrets
+* Payment signature verification
+
+---
+
+7. SEARCH & FILTER:
+
+* Filter vehicles by:
+
+  * capacity
+  * price range
+  * type
+  * location
+
+---
+
+8. ERROR HANDLING:
+
+* Centralized error middleware
+* Proper HTTP status codes
+* Clean error messages
+
+---
+
+9. SCALABILITY PREPARATION:
+
+* Modular services
+* Clean controller logic
+* Ready for:
+
+  * Payment gateway integration
+  * Multi-city expansion
+  * High traffic
+
+---
+
+OPTIONAL (ADVANCED):
+
+* Rate limiting middleware
+* Redis caching (for popular routes)
+* Role-based access control
+* Payment webhooks
+* Refund system
+
+---
+
+FINAL OUTPUT REQUIREMENTS:
+
+* Complete backend codebase
+* Runs without errors
+* Clean, readable, maintainable code
+* Professional naming conventions
+* Easily connectable to frontend
+
+---
+
+GOAL:
+
+This backend should:
+
+* Reflect real-world backend engineering practices
+* Be strong enough for internships and job interviews
+* Demonstrate system design thinking
+* Be extendable into a full production system
+
+---
+
+Now generate the complete backend codebase.

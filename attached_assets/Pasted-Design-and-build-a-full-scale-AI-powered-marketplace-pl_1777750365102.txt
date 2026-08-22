@@ -1,0 +1,305 @@
+Design and build a full-scale AI-powered marketplace platform called "YatraWheels" with FAANG-level UI/UX, complete frontend + backend architecture, and production-grade workflows.
+
+---
+
+CORE PRODUCT VISION:
+
+YatraWheels is an AI-powered travel and vehicle marketplace platform with:
+
+1. Users → Book vehicles and plan trips using AI
+2. Vendors (Vehicle Owners) → List and manage vehicles
+3. Drivers → Provide driving services
+4. Admin → Control platform, analytics, and payments
+
+The platform should feel like a real-world product similar to Uber or Airbnb, combined with modern AI SaaS experiences.
+
+---
+
+1. GLOBAL DESIGN SYSTEM (UI/UX)
+
+* Typography: Inter or Poppins
+* Theme: Dark with elegant gradients (blue/purple accents)
+* Style: Glassmorphism + soft shadows
+* Border radius: 16–24px
+* Smooth animations and transitions
+* Clean spacing and alignment
+* Mobile-first responsive design
+
+---
+
+2. USER APPLICATION (FRONTEND)
+
+### Homepage:
+
+* Hero section with travel background + AI CTA
+* Glassmorphism search bar
+* Trust indicators (ratings, users, verified drivers)
+* Use cases (road trips, weddings, group travel)
+* Fleet section (vehicle cards with images, pricing)
+* AI Planner section (split UI)
+* Popular routes
+* CTA + Footer
+
+---
+
+3. AI PLANNER (CORE FEATURE)
+
+### Layout:
+
+* Desktop: Split screen
+
+  * Left: Chat + inputs
+  * Right: AI output
+
+### Left Panel:
+
+* Chat UI (ChatGPT-style)
+* Sticky input box
+* Inputs:
+
+  * destination
+  * budget
+  * dates
+  * travelers
+
+### Right Panel:
+
+* Structured UI:
+
+  * Destination header with image
+  * Day-wise itinerary cards
+  * Budget breakdown
+  * Recommendations
+
+### Features:
+
+* Typing animation
+* Regenerate plan
+* Modify plan
+* Suggested prompts
+
+---
+
+4. BOOKING FLOW
+
+* User selects vehicle
+
+* Option:
+
+  * With driver
+  * Without driver
+
+* If no driver:
+
+  * Show available drivers
+
+* Show price breakdown:
+
+  * vehicle cost
+  * driver fee
+  * distance cost
+  * platform fee
+
+* User completes payment
+
+---
+
+5. VENDOR PANEL (VEHICLE OWNERS)
+
+### Features:
+
+* Register / login
+* Add vehicle:
+
+  * images
+  * price
+  * availability
+* Manage vehicles
+* View bookings
+* Track earnings
+
+### UI:
+
+* Sidebar layout
+* Cards for vehicles
+* Tables for bookings
+* Mobile responsive
+
+---
+
+6. DRIVER PANEL
+
+### Features:
+
+* Register / login
+* Upload license
+* Set availability
+* Accept ride requests
+* View assigned bookings
+* Track earnings
+
+### Matching Logic:
+
+* If vehicle has no driver:
+
+  * system suggests drivers
+  * driver accepts request
+
+---
+
+7. ADMIN PANEL (CONTROL CENTER)
+
+### Dashboard:
+
+* Total users
+* Total vendors
+* Total drivers
+* Total bookings
+* Total revenue
+
+### Management:
+
+* Approve/reject vendors
+* Verify drivers
+* Manage vehicles
+* View bookings
+* Monitor AI usage
+* Monitor payments
+
+### UI:
+
+* Sidebar navigation
+* Analytics cards
+* Graphs (revenue, bookings)
+* Tables with filters
+
+---
+
+8. PAYMENT SYSTEM (FULLY AUTOMATED)
+
+### Flow:
+
+* User pays full amount to platform
+* Payment is verified via webhook
+* Money is held (escrow-style)
+* Trip lifecycle:
+  pending → confirmed → ongoing → completed
+
+### On trip completion:
+
+* Automatically trigger payouts:
+
+  * Vendor receives vendorAmount
+  * Driver receives driverAmount
+  * Platform keeps commission
+
+### Pricing logic:
+
+Total =
+vehicle price
+
+* driver fee
+* distance cost
+* platform fee
+
+---
+
+9. BACKEND ARCHITECTURE
+
+Use Node.js + Express
+
+Structure:
+
+* routes/
+* controllers/
+* services/
+
+  * aiService
+  * paymentService
+  * payoutService
+* models/
+* middleware/
+
+---
+
+10. DATABASE DESIGN (MongoDB)
+
+Models:
+
+User:
+
+* role (user/vendor/driver/admin)
+* profile data
+
+Vehicle:
+
+* vendorId
+* price
+* images
+* availability
+
+Driver:
+
+* license
+* availability
+* rating
+
+Booking:
+
+* userId
+* vendorId
+* driverId
+* totalAmount
+* vendorAmount
+* driverAmount
+* platformFee
+* status
+* paymentStatus
+* payoutStatus
+
+---
+
+11. AUTOMATION
+
+* Payment webhook handling
+* Auto payout trigger on trip completion
+* Retry failed payouts
+* Prevent duplicate payouts
+
+---
+
+12. SECURITY
+
+* JWT authentication
+* Role-based access
+* Payment verification
+* Input validation
+
+---
+
+13. PERFORMANCE
+
+* Lazy loading images
+* Optimized assets
+* Fast API responses
+
+---
+
+14. RESPONSIVENESS
+
+* Mobile-first design
+* No broken layouts
+* Works on all devices
+
+---
+
+15. FINAL GOAL
+
+Build a production-level AI-powered marketplace that:
+
+* Looks like a premium SaaS product
+* Has real-world business logic
+* Supports automation and scaling
+* Demonstrates full-stack + AI + system design expertise
+
+The final output should look like something built by a top-tier engineer and designer working on a real startup product.
