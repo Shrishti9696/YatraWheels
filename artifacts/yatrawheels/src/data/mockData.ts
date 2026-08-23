@@ -76,7 +76,7 @@ export const mockVehicles: Vehicle[] = [
     features: ["AC", "Bluetooth", "Leather Seats", "Fast FASTag"],
     rating: 4.8,
     reviewCount: 124,
-    imageUrl: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fd?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800",
     available: true,
   },
   {
@@ -160,7 +160,7 @@ export const mockVehicles: Vehicle[] = [
     features: ["VIP Lounge Seats", "Dual Sunroof", "Smart Air Purifier"],
     rating: 4.9,
     reviewCount: 92,
-    imageUrl: "https://images.unsplash.com/photo-1623880479155-25e24c28cde8?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=800",
     available: true,
   }
 ];
@@ -171,7 +171,7 @@ export const mockDestinations: Destination[] = [
     name: "Udaipur",
     state: "Rajasthan",
     description: "City of Lakes with majestic palaces and heritage.",
-    imageUrl: "https://images.unsplash.com/photo-1615836245337-f839d40a5a67?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d1.jpg",
     popularFor: ["Heritage", "Romance", "Photography"]
   },
   {
@@ -179,7 +179,7 @@ export const mockDestinations: Destination[] = [
     name: "Manali",
     state: "Himachal Pradesh",
     description: "High-altitude Himalayan resort town.",
-    imageUrl: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d2.jpg",
     popularFor: ["Mountains", "Adventure", "Nature"]
   },
   {
@@ -187,7 +187,7 @@ export const mockDestinations: Destination[] = [
     name: "Goa",
     state: "Goa",
     description: "Coastal paradise with pristine beaches and vibrant nightlife.",
-    imageUrl: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d3.jpg",
     popularFor: ["Beaches", "Nightlife", "Relaxation"]
   },
   {
@@ -195,7 +195,7 @@ export const mockDestinations: Destination[] = [
     name: "Munnar",
     state: "Kerala",
     description: "Rolling hills with endless tea plantations.",
-    imageUrl: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d4.jpg",
     popularFor: ["Nature", "Tea Estates", "Tranquility"]
   },
   {
@@ -203,7 +203,7 @@ export const mockDestinations: Destination[] = [
     name: "Rishikesh",
     state: "Uttarakhand",
     description: "Yoga capital and gateway to the Himalayas.",
-    imageUrl: "https://images.unsplash.com/photo-1605640840469-808269cd2fba?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d5.jpg",
     popularFor: ["Yoga", "Rafting", "Spirituality"]
   },
   {
@@ -211,7 +211,7 @@ export const mockDestinations: Destination[] = [
     name: "Coorg",
     state: "Kerala",
     description: "Scotland of India with lush greenery.",
-    imageUrl: "https://images.unsplash.com/photo-1593693397690-362cb9666c6b?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d6.jpg",
     popularFor: ["Coffee", "Hills", "Trekking"]
   },
   {
@@ -219,7 +219,7 @@ export const mockDestinations: Destination[] = [
     name: "Agra",
     state: "Uttar Pradesh",
     description: "Home of the iconic Taj Mahal.",
-    imageUrl: "https://images.unsplash.com/photo-1564507592228-01e403d15582?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d7.jpg",
     popularFor: ["History", "Architecture", "Culture"]
   },
   {
@@ -227,7 +227,7 @@ export const mockDestinations: Destination[] = [
     name: "Ooty",
     state: "Karnataka",
     description: "Picturesque hill station surrounded by forests.",
-    imageUrl: "https://images.unsplash.com/photo-1589181140026-6df790755ec5?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d8.jpg",
     popularFor: ["Nature", "Waterfalls", "Spices"]
   },
   {
@@ -235,7 +235,7 @@ export const mockDestinations: Destination[] = [
     name: "Darjeeling",
     state: "West Bengal",
     description: "Queen of the Hills with stunning Kanchenjunga views.",
-    imageUrl: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d9.jpg",
     popularFor: ["Tea", "Toy Train", "Views"]
   },
   {
@@ -243,7 +243,7 @@ export const mockDestinations: Destination[] = [
     name: "Jaipur",
     state: "Rajasthan",
     description: "The Pink City renowned for its historic forts.",
-    imageUrl: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "/explore/d10.jpg",
     popularFor: ["Forts", "Shopping", "Culture"]
   }
 ];
@@ -257,7 +257,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "3h 30m",
     basePrice: 3500,
     popular: true,
-    imageUrl: "https://images.unsplash.com/photo-1564507592228-01e403d15582?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r1.jpg"
   },
   {
     id: "r2",
@@ -267,7 +267,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "2h 45m",
     basePrice: 2800,
     popular: true,
-    imageUrl: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r2.jpg"
   },
   {
     id: "r3",
@@ -277,7 +277,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "4h 15m",
     basePrice: 4200,
     popular: true,
-    imageUrl: "https://images.unsplash.com/photo-1583091016830-4e38c7f9d8a5?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r3.jpg"
   },
   {
     id: "r4",
@@ -287,7 +287,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "11h 30m",
     basePrice: 8500,
     popular: false,
-    imageUrl: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r4.jpg"
   },
   {
     id: "r5",
@@ -297,7 +297,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "8h 00m",
     basePrice: 5500,
     popular: true,
-    imageUrl: "https://images.unsplash.com/photo-1565538166014-984e84b8e5c1?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r5.jpg"
   },
   {
     id: "r6",
@@ -307,7 +307,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "5h 30m",
     basePrice: 4800,
     popular: false,
-    imageUrl: "https://images.unsplash.com/photo-1593693397690-362cb9666c6b?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r6.jpg"
   },
   {
     id: "r7",
@@ -317,7 +317,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "0h 40m",
     basePrice: 800,
     popular: true,
-    imageUrl: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r7.jpg"
   },
   {
     id: "r8",
@@ -327,7 +327,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "1h 10m",
     basePrice: 1200,
     popular: true,
-    imageUrl: "https://images.unsplash.com/photo-1522204523234-8729aa6e3d5f?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r8.jpg"
   },
   {
     id: "r9",
@@ -337,7 +337,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "3h 45m",
     basePrice: 3200,
     popular: false,
-    imageUrl: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r9.jpg"
   },
   {
     id: "r10",
@@ -347,7 +347,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "4h 00m",
     basePrice: 3600,
     popular: false,
-    imageUrl: "https://images.unsplash.com/photo-1593693397690-362cb9666c6b?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r10.jpg"
   },
   {
     id: "r11",
@@ -357,7 +357,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "1h 30m",
     basePrice: 1500,
     popular: true,
-    imageUrl: "https://images.unsplash.com/photo-1605640840469-808269cd2fba?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r11.jpg"
   },
   {
     id: "r12",
@@ -367,7 +367,7 @@ export const mockRoutes: Route[] = [
     estimatedTime: "6h 00m",
     basePrice: 5000,
     popular: false,
-    imageUrl: "https://images.unsplash.com/photo-1589181140026-6df790755ec5?auto=format&fit=crop&q=80&w=400"
+    imageUrl: "/explore/r12.jpg"
   }
 ];
 

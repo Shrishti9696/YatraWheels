@@ -1,0 +1,37 @@
+Cloning from https://github.com/Shrishti9696/YatraWheels
+==> Checking out commit 534bfc5ef2434ccd88a7913452aaa8d4c97d7549 in branch main
+==> Using Node.js version 24.14.1 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build'...
+> @workspace/api-server@0.0.0 build /opt/render/project/src/artifacts/api-server
+> node ./build.mjs
+  dist/index.mjs                       5.4mb ⚠️
+  dist/pino-worker.mjs               153.4kb
+  dist/pino-file.mjs                 142.1kb
+  dist/pino-pretty.mjs               114.6kb
+  dist/thread-stream-worker.mjs        7.3kb
+  dist/index.mjs.map                  10.9mb
+  dist/pino-worker.mjs.map           256.9kb
+  dist/pino-file.mjs.map             229.0kb
+  dist/pino-pretty.mjs.map           203.9kb
+  dist/thread-stream-worker.mjs.map   12.0kb
+⚡ Done in 943ms
+==> Uploading build...
+==> Uploaded in 4.1s. Compression took 2.5s
+==> Build successful 🎉
+==> Deploying...
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Running 'node --enable-source-maps artifacts/api-server/dist/index.mjs'
+{"level":30,"time":1787417326756,"pid":70,"hostname":"srv-da4t2s6417fc73df37og-hibernate-8d749c-j6tfq","port":10000,"msg":"Server listening"}
+{"level":30,"time":1787417327366,"pid":70,"hostname":"srv-da4t2s6417fc73df37og-hibernate-8d749c-j6tfq","req":{"id":1,"method":"HEAD","url":"/"},"res":{"statusCode":404},"responseTime":5,"msg":"request completed"}
+{"level":30,"time":1787417327799,"pid":70,"hostname":"srv-da4t2s6417fc73df37og-hibernate-8d749c-j6tfq","msg":"MongoDB connected successfully"}
+{"level":30,"time":1787417328250,"pid":70,"hostname":"srv-da4t2s6417fc73df37og-hibernate-8d749c-j6tfq","count":15,"msg":"Vehicles exist — skipping vehicle seed"}
+{"level":30,"time":1787417329778,"pid":70,"hostname":"srv-da4t2s6417fc73df37og-hibernate-8d749c-j6tfq","msg":"All demo drivers already exist — skipping"}
+==> Your service is live 🎉
+{"level":30,"time":1787417333016,"pid":70,"hostname":"srv-da4t2s6417fc73df37og-hibernate-8d749c-j6tfq","req":{"id":2,"method":"GET","url":"/"},"res":{"statusCode":404},"responseTime":1,"msg":"request completed"}
+==> 
+==> ///////////////////////////////////////////////////////////
+==> 
+==> Available at your primary URL https://yatrawheels.onrender.com
+==> 
+==> ///////////////////////////////////////////////////////////
