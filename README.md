@@ -2,7 +2,7 @@
 
 An AI-powered vehicle booking and travel planning marketplace optimized for localized transport ecosystems in India.
 
-🔗 **Live Application:** [https://yatra-wheels--shrishtiyadav38.replit.app]
+🔗 **Live Application:** [yatrawheels-seven.vercel.app]
 
 ---
 
