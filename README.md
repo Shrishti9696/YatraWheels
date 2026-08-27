@@ -2,7 +2,7 @@
 
 An AI-powered vehicle booking and travel planning marketplace optimized for localized transport ecosystems in India.
 
-🔗 **Live Application:** [yatrawheels-seven.vercel.app]
+🔗 **Live Application:** [https://yatrawheels-seven.vercel.app]
 
 ---
 
